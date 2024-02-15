@@ -1,0 +1,18 @@
+"We can do this", string_lit
+"hello;;;;;ebriwan", string_lit
+if, identifier
+"Hello", string_lit
+roar, identifier
+123, num_lit
+-100000, num_lit
+roar123, identifier
+Roar123, identifier
+ifElse, identifier
+"", string_lit
+"\"", string_lit
+"Ror does not have a char datatype like 'a'", string_lit
+"r0r0R0r0r", string_lit
+"this is a valid string literal,\n with a line break", string_lit
+"valid string lit\t with tab", string_lit
+"slash slash slash \\\\\\\\\\\\\\\\\\", string_lit
+blackspace, identifier

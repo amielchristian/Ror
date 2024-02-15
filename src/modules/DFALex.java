@@ -34,7 +34,7 @@ public class DFALex {
             curr = map.get(curr.goToNext(c));
             
 	    if (curr == null) {
-                System.out.println("found none");
+                System.out.println("Did not arrive at accepting state");
 		break;
 	    }
             
@@ -46,7 +46,7 @@ public class DFALex {
 	}
         
 	if (curr != null && curr.isAcceptState) {
-            System.out.println(curr.token);
+            System.out.println("Input Token: " + input + ", Token: " + curr.token);
 	    match = true;
 	} else {
             System.out.println("Did not arrive at accepting state");
@@ -147,22 +147,22 @@ class State {
 
     String goToNext(String c) {
         String edgeVal;
-        System.out.println("Character: " + c);
+//        System.out.println("Character: " + c    );
         for (int i = 0; i < this.edges.size(); i++) {
             edgeVal = this.edges.get(i).val;
             
-            System.out.println("Edge Value: " + edgeVal);
+//            System.out.println("Edge Value: " + edgeVal);
             
             if (edgeVal.equals(c)) {
-                System.out.println("Next State:" + this.edges.get(i).pointsTo + "\n");
+//                System.out.println("Next State:" + this.edges.get(i).pointsTo + "\n");
                 return this.edges.get(i).pointsTo;
             } else if (edgeVal.charAt(0) == '[') {
                 if(c.matches(edgeVal)) {
-                    System.out.println("Next State:" + this.edges.get(i).pointsTo + "\n");
+//                    System.out.println("Next State:" + this.edges.get(i).pointsTo + "\n");
                     return this.edges.get(i).pointsTo; 
                 }
             } else if (edgeVal.equals("Others")) {
-                System.out.println("Next State:" + this.edges.get(i).pointsTo + "\n");
+//                System.out.println("Next State:" + this.edges.get(i).pointsTo + "\n");
                 return this.edges.get(i).pointsTo;
             }
         }
