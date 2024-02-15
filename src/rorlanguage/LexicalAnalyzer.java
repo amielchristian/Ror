@@ -1,16 +1,14 @@
 package rorlanguage;
 
-import java.util.LinkedList;
-import java.util.Queue;
+import modules.DFALex;
 
 public class LexicalAnalyzer {
     public static void main(String[] args)  {
-        String str = "Roar";
+        String s = "\"Hello\"";
+        String filename = "dfa.json";
         
-        Queue<Character> charsQueue = new LinkedList<Character>();
-        for (char c : str.toCharArray()) {
-            charsQueue.offer(c);
-        }
-       
+        DFALex dfa = new DFALex(filename);
+        dfa.run(s);
     }
+    
 }
