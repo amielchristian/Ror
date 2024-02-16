@@ -23,7 +23,7 @@ public class DFALex {
         this.startState = map.get("q0");
     }
     
-    public boolean run(String input) {
+    public String run(String input) {
         boolean match = false;
         
         State curr = this.startState;
@@ -34,26 +34,27 @@ public class DFALex {
             curr = map.get(curr.goToNext(c));
             
 	    if (curr == null) {
-                System.out.println("Did not arrive at accepting state");
+//                System.out.println("Did not arrive at accepting state");
 		break;
 	    }
             
             if (curr.isNullState) {
-                System.out.println("Arrived at Null state");
+//                System.out.println("Arrived at Null state");
                 break;
             }
             
 	}
         
 	if (curr != null && curr.isAcceptState) {
-            System.out.println("Input Token: " + input + ", Token: " + curr.token);
+//            System.out.println("Input Token: " + input + ", Token: " + curr.token);
 	    match = true;
+            return  curr.token;
 	} else {
-            System.out.println("Did not arrive at accepting state");
+//            System.out.println("Did not arrive at accepting state");
         }
         
 
-	return match;
+	return "";  
     }
     
     void getStateFromJSON(String filename) {
