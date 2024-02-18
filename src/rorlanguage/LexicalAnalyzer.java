@@ -9,16 +9,19 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import modules.DFALex;
+import modules.SymbolTable;
 
 public class LexicalAnalyzer {
     public static void main(String[] args)  {
         String dfaFile = "dfa.json";
         
+        SymbolTable st = new SymbolTable();
         DFALex dfa = new DFALex(dfaFile);
-        runTestProgram(dfa);
+        runTestProgram(dfa, st);
+        System.out.println(st.toString());
     }
     
-    static void runTestProgram(DFALex dfa) {
+    static void runTestProgram(DFALex dfa, SymbolTable st) {
         String str, token;
         String output = "";
         try {
@@ -55,7 +58,10 @@ public class LexicalAnalyzer {
                     if (!groupCommentFound) {
                         switch (token)  {
                             default -> output += "\n"+token;
-                            case "identifier" -> output += "\nid_"+lexeme;
+                            case "identifier" -> {
+                                output += "\nid_"+lexeme;
+                                st.addToken("id_"+lexeme);
+                            }
                             case "" -> {
                                 output += "\nINVALID TOKEN '"+lexeme+"' AT LINE "+line;
                                 errors++;

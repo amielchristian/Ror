@@ -1,1 +1,5 @@
 Word word = "wtff\" ??";
+Roar("wtf"");
+
+Bool b1 = True;
+Bool b2 = False;
