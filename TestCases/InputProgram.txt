@@ -6,7 +6,11 @@ Repeat ( i > 10 ) 	{
 i--;
 
 <#
-This is a multiline comment
+This
+is
+a
+multiline
+comment
 #>
 
 # If-else statements

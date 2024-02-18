@@ -34,6 +34,8 @@
 			["q5",";"],
 			["q6","{"],
 			["q7","}"],
+			["q65", "W"],
+			["q69", "B"],
 			["null", "Others"]
 		]
 	
@@ -660,10 +662,97 @@
 			["q55", "Others"]
 		]
 	},
+	
 	{
 		"name": "q64",
 		"type": "final",
 		"transitions": [],
 		"token": "string_lit"
+	},
+
+	{
+		"name": "q65",
+		"type": "final",
+		"transitions": [
+			["q66","o"],
+			["q31","[a-zA-Z0-9_]"],
+			["null", "Others"]
+		],
+		"token": "identifier"
+	},
+
+	{
+		"name": "q66",
+		"type": "final",
+		"transitions": [
+			["q67","r"],
+			["q31","[a-zA-Z0-9_]"],
+			["null", "Others"]
+		],
+		"token": "identifier"
+	},
+
+	{
+		"name": "q67",
+		"type": "final",
+		"transitions": [
+			["q68","d"],
+			["q31","[a-zA-Z0-9_]"],
+			["null", "Others"]
+		],
+		"token": "identifier"
+	},
+
+	{
+		"name": "q68",
+		"type": "final",
+		"transitions": [
+			["q31","[a-zA-Z0-9_]"],
+			["null", "Others"]
+		],
+		"token": "word"
+	},
+
+	{
+		"name": "q69",
+		"type": "final",
+		"transitions": [
+			["q70","o"],
+			["q31","[a-zA-Z0-9_]"],
+			["null", "Others"]
+		],
+		"token": "identifier"
+	},
+
+	{
+		"name": "q70",
+		"type": "final",
+		"transitions": [
+			["q71","o"],
+			["q31","[a-zA-Z0-9_]"],
+			["null", "Others"]
+		],
+		"token": "identifier"
+	},
+
+	{
+		"name": "q71",
+		"type": "final",
+		"transitions": [
+			["q71","l"],
+			["q31","[a-zA-Z0-9_]"],
+			["null", "Others"]
+		],
+		"token": "identifier"
+	},
+
+	{
+		"name": "q72",
+		"type": "final",
+		"transitions": [
+			["q31","[a-zA-Z0-9_]"],
+			["null", "Others"]
+		],
+		"token": "bool"
 	}
 ]	
