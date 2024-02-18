@@ -140,4 +140,9 @@ INPUT TOKEN: a,	 FOUND: identifier
 INPUT TOKEN: comment,	 FOUND: identifier
 INPUT TOKEN: <#,	 FOUND: group_comment_start
 INPUT TOKEN: #>,	 FOUND: group_comment_end
+INPUT TOKEN: 5,	 FOUND: num_lit
+INPUT TOKEN: test,	 FOUND: identifier
+INPUT TOKEN: =,	 FOUND: assign_op
+INPUT TOKEN: "Test",	 FOUND: string_lit
+INPUT TOKEN: ;,	 FOUND: terminate
 FOUND 1 INVALID TOKENS

@@ -38,3 +38,6 @@ roar("hello world ror!");
 nom();  
 # this is a comment
 <# this is a multi-line comment #> 
+
+
+5 test = "Test""; 

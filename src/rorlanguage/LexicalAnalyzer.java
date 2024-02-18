@@ -81,7 +81,7 @@ public class LexicalAnalyzer {
             str = str.replaceAll("\\+\\+",  " ++ ");
             str = str.replaceAll("\\s+"," ");
             str = str.replaceAll(";", " ; ");
-            str = str.replaceAll("\\n#(.*)\\n", "#");
+            str = str.replaceAll("#[^\\n\\r>]+?(?:\\*\\)|[\\n\\r])", "#");
             str = str.replaceAll("<#([^(#>)])*#>", "<# #>");
             List<String> matchList = new ArrayList<String>();
             System.out.println(str);
@@ -97,7 +97,6 @@ public class LexicalAnalyzer {
             for (String lexeme : matchList) {
                 token = dfa.run(lexeme);
                 output += "\nINPUT TOKEN: " + lexeme + ",\t FOUND: " + ((!token.equals("")) ? token : "INVALID TOKEN" + ++i);
-                
                 
             }
                 writer.println(output);
