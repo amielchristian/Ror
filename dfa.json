@@ -16,6 +16,8 @@
 			["q21", "I"],
 			["q25", "A"],
 			["q28", "O"],
+                        ["q65", "W"],
+			["q69", "B"],
 			["q30","[a-zA-Z_]"],
 			["q33","[0-9]"],
 			["q34","<"],
@@ -34,8 +36,8 @@
 			["q5",";"],
 			["q6","{"],
 			["q7","}"],
-			["q65", "W"],
-			["q69", "B"],
+			["q73","T"],
+			["q77","F"],
 			["null", "Others"]
 		]
 	
@@ -754,5 +756,102 @@
 			["null", "Others"]
 		],
 		"token": "bool"
+	},
+
+	{
+		"name": "q73",
+		"type": "final",
+		"transitions": [
+			["q74","r"],
+			["q31","[a-zA-Z0-9_]"],
+			["null", "Others"]
+		],
+		"token": "identifier"
+	},
+
+	{
+		"name": "q74",
+		"type": "final",
+		"transitions": [
+			["q75","u"],
+			["q31","[a-zA-Z0-9_]"],
+			["null", "Others"]
+		],
+		"token": "identifier"
+	},
+
+	{
+		"name": "q75",
+		"type": "final",
+		"transitions": [
+			["q76","e"],
+			["q31","[a-zA-Z0-9_]"],
+			["null", "Others"]
+		],
+		"token": "identifier"
+	},
+
+	{
+		"name": "q76",
+		"type": "final",
+		"transitions": [
+			["q31","[a-zA-Z0-9_]"],
+			["null", "Others"]
+		],
+		"token": "true_bool"
+	},
+
+	{
+		"name": "q77",
+		"type": "final",
+		"transitions": [
+			["q78","a"],
+			["q31","[a-zA-Z0-9_]"],
+			["null", "Others"]
+		],
+		"token": "identifier"
+	},
+
+	{
+		"name": "q78",
+		"type": "final",
+		"transitions": [
+			["q79","l"],
+			["q31","[a-zA-Z0-9_]"],
+			["null", "Others"]
+		],
+		"token": "identifier"
+	},
+
+	{
+		"name": "q79",
+		"type": "final",
+		"transitions": [
+			["q80","s"],
+			["q31","[a-zA-Z0-9_]"],
+			["null", "Others"]
+		],
+		"token": "identifier"
+	},
+
+	{
+		"name": "q80",
+		"type": "final",
+		"transitions": [
+			["q81","e"],
+			["q31","[a-zA-Z0-9_]"],
+			["null", "Others"]
+		],
+		"token": "identifier"
+	},
+
+	{
+		"name": "q81",
+		"type": "final",
+		"transitions": [
+			["q31","[a-zA-Z0-9_]"],
+			["null", "Others"]
+		],
+		"token": "false_bool"
 	}
 ]	

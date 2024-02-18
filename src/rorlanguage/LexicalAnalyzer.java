@@ -36,9 +36,10 @@ public class LexicalAnalyzer {
                 str = str.replaceAll("\\+\\+",  " ++ ");
                 str = str.replaceAll("\\s+"," ");
                 str = str.replaceAll(";", " ; ");
-//              str = str.replaceAll("#[^\\n\\r>]+?(?:\\*\\)|[\\n\\r])", "#");
-//              str = str.replaceAll("<#([^(#>)])*#>", "<# #>");
-
+                str = str.replaceAll("#>", " #>");
+                str = str.replaceAll("<#", "<# ");
+                str = str.replaceAll("(?<!<)#(?!>)", " # ");
+                
                 // add matched tokens in the line to a list
                 List<String> matchList = new ArrayList<>();
                 System.out.println(str);
