@@ -10,7 +10,7 @@ package modules;
  */
 public class ShiftReducer {
     public ShiftReducer() {}
-    public void reduce(DFALex dfa, String statement) {
-        
+    public void shiftReduce(DFALex dfa, String statement) {
+        return;
     }
 }
