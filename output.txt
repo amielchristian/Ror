@@ -1,148 +1,23 @@
 
-INPUT TOKEN: Int,	 FOUND: int
-INPUT TOKEN: i,	 FOUND: identifier
-INPUT TOKEN: =,	 FOUND: assign_op
-INPUT TOKEN: Nom,	 FOUND: nom
-INPUT TOKEN: (,	 FOUND: parenthesis_start
-INPUT TOKEN: ),	 FOUND: parenthesis_end
-INPUT TOKEN: ;,	 FOUND: terminate
-INPUT TOKEN: #,	 FOUND: single_comment
-INPUT TOKEN: this,	 FOUND: identifier
-INPUT TOKEN: is,	 FOUND: identifier
-INPUT TOKEN: a,	 FOUND: identifier
-INPUT TOKEN: comment,	 FOUND: identifier
-INPUT TOKEN: Repeat,	 FOUND: repeat
-INPUT TOKEN: (,	 FOUND: parenthesis_start
-INPUT TOKEN: i,	 FOUND: identifier
-INPUT TOKEN: >,	 FOUND: gt
-INPUT TOKEN: 10,	 FOUND: num_lit
-INPUT TOKEN: ),	 FOUND: parenthesis_end
-INPUT TOKEN: {,	 FOUND: bracket_start
-INPUT TOKEN: Roar,	 FOUND: roar
-INPUT TOKEN: (,	 FOUND: parenthesis_start
-INPUT TOKEN: i,	 FOUND: identifier
-INPUT TOKEN: ),	 FOUND: parenthesis_end
-INPUT TOKEN: ;,	 FOUND: terminate
-INPUT TOKEN: i,	 FOUND: identifier
-INPUT TOKEN: ++,	 FOUND: increment_op
-INPUT TOKEN: ;,	 FOUND: terminate
-INPUT TOKEN: },	 FOUND: bracket_end
-INPUT TOKEN: i,	 FOUND: identifier
-INPUT TOKEN: --,	 FOUND: decrement_op
-INPUT TOKEN: ;,	 FOUND: terminate
-INPUT TOKEN: <#,	 FOUND: group_comment_start
-INPUT TOKEN: #>,	 FOUND: group_comment_end
-INPUT TOKEN: #,	 FOUND: single_comment
-INPUT TOKEN: If-else,	 FOUND: INVALID TOKEN1
-INPUT TOKEN: statements,	 FOUND: identifier
-INPUT TOKEN: Int,	 FOUND: int
-INPUT TOKEN: num1,	 FOUND: identifier
-INPUT TOKEN: =,	 FOUND: assign_op
-INPUT TOKEN: 10,	 FOUND: num_lit
-INPUT TOKEN: ;,	 FOUND: terminate
-INPUT TOKEN: Int,	 FOUND: int
-INPUT TOKEN: num2,	 FOUND: identifier
-INPUT TOKEN: =,	 FOUND: assign_op
-INPUT TOKEN: 11,	 FOUND: num_lit
-INPUT TOKEN: ;,	 FOUND: terminate
-INPUT TOKEN: If,	 FOUND: if
-INPUT TOKEN: (,	 FOUND: parenthesis_start
-INPUT TOKEN: num1,	 FOUND: identifier
-INPUT TOKEN: >,	 FOUND: gt
-INPUT TOKEN: num2,	 FOUND: identifier
-INPUT TOKEN: ),	 FOUND: parenthesis_end
-INPUT TOKEN: {,	 FOUND: bracket_start
-INPUT TOKEN: Roar,	 FOUND: roar
-INPUT TOKEN: (,	 FOUND: parenthesis_start
-INPUT TOKEN: "greater than",	 FOUND: string_lit
-INPUT TOKEN: ),	 FOUND: parenthesis_end
-INPUT TOKEN: ;,	 FOUND: terminate
-INPUT TOKEN: },	 FOUND: bracket_end
-INPUT TOKEN: Else,	 FOUND: else
-INPUT TOKEN: If,	 FOUND: if
-INPUT TOKEN: (,	 FOUND: parenthesis_start
-INPUT TOKEN: num1,	 FOUND: identifier
-INPUT TOKEN: <,	 FOUND: lt
-INPUT TOKEN: num2,	 FOUND: identifier
-INPUT TOKEN: ),	 FOUND: parenthesis_end
-INPUT TOKEN: {,	 FOUND: bracket_start
-INPUT TOKEN: Roar,	 FOUND: roar
-INPUT TOKEN: (,	 FOUND: parenthesis_start
-INPUT TOKEN: "less than",	 FOUND: string_lit
-INPUT TOKEN: ),	 FOUND: parenthesis_end
-INPUT TOKEN: ;,	 FOUND: terminate
-INPUT TOKEN: },	 FOUND: bracket_end
-INPUT TOKEN: Else,	 FOUND: else
-INPUT TOKEN: {,	 FOUND: bracket_start
-INPUT TOKEN: Roar,	 FOUND: roar
-INPUT TOKEN: (,	 FOUND: parenthesis_start
-INPUT TOKEN: "equal",	 FOUND: string_lit
-INPUT TOKEN: ),	 FOUND: parenthesis_end
-INPUT TOKEN: ;,	 FOUND: terminate
-INPUT TOKEN: },	 FOUND: bracket_end
-INPUT TOKEN: #,	 FOUND: single_comment
-INPUT TOKEN: Logical,	 FOUND: identifier
-INPUT TOKEN: operators,	 FOUND: identifier
-INPUT TOKEN: If,	 FOUND: if
-INPUT TOKEN: (,	 FOUND: parenthesis_start
-INPUT TOKEN: num1,	 FOUND: identifier
-INPUT TOKEN: ==,	 FOUND: equal_rel
-INPUT TOKEN: 10,	 FOUND: num_lit
-INPUT TOKEN: And,	 FOUND: and
-INPUT TOKEN: num2,	 FOUND: identifier
-INPUT TOKEN: ==,	 FOUND: equal_rel
-INPUT TOKEN: 11,	 FOUND: num_lit
-INPUT TOKEN: ),	 FOUND: parenthesis_end
-INPUT TOKEN: {,	 FOUND: bracket_start
-INPUT TOKEN: Roar,	 FOUND: roar
-INPUT TOKEN: (,	 FOUND: parenthesis_start
-INPUT TOKEN: "yehey!",	 FOUND: string_lit
-INPUT TOKEN: ),	 FOUND: parenthesis_end
-INPUT TOKEN: ;,	 FOUND: terminate
-INPUT TOKEN: },	 FOUND: bracket_end
-INPUT TOKEN: If,	 FOUND: if
-INPUT TOKEN: (,	 FOUND: parenthesis_start
-INPUT TOKEN: num1,	 FOUND: identifier
-INPUT TOKEN: ==,	 FOUND: equal_rel
-INPUT TOKEN: 10,	 FOUND: num_lit
-INPUT TOKEN: Or,	 FOUND: or
-INPUT TOKEN: num2,	 FOUND: identifier
-INPUT TOKEN: ==,	 FOUND: equal_rel
-INPUT TOKEN: 1,	 FOUND: num_lit
-INPUT TOKEN: ),	 FOUND: parenthesis_end
-INPUT TOKEN: {,	 FOUND: bracket_start
-INPUT TOKEN: Roar,	 FOUND: roar
-INPUT TOKEN: (,	 FOUND: parenthesis_start
-INPUT TOKEN: "yehey ulet!",	 FOUND: string_lit
-INPUT TOKEN: ),	 FOUND: parenthesis_end
-INPUT TOKEN: ;,	 FOUND: terminate
-INPUT TOKEN: },	 FOUND: bracket_end
-INPUT TOKEN: i,	 FOUND: identifier
-INPUT TOKEN: --,	 FOUND: decrement_op
-INPUT TOKEN: ;,	 FOUND: terminate
-INPUT TOKEN: i,	 FOUND: identifier
-INPUT TOKEN: ++,	 FOUND: increment_op
-INPUT TOKEN: ;,	 FOUND: terminate
-INPUT TOKEN: ROar,	 FOUND: identifier
-INPUT TOKEN: roar,	 FOUND: identifier
-INPUT TOKEN: (,	 FOUND: parenthesis_start
-INPUT TOKEN: "hello world ror!",	 FOUND: string_lit
-INPUT TOKEN: ),	 FOUND: parenthesis_end
-INPUT TOKEN: ;,	 FOUND: terminate
-INPUT TOKEN: nom,	 FOUND: identifier
-INPUT TOKEN: (,	 FOUND: parenthesis_start
-INPUT TOKEN: ),	 FOUND: parenthesis_end
-INPUT TOKEN: ;,	 FOUND: terminate
-INPUT TOKEN: #,	 FOUND: single_comment
-INPUT TOKEN: this,	 FOUND: identifier
-INPUT TOKEN: is,	 FOUND: identifier
-INPUT TOKEN: a,	 FOUND: identifier
-INPUT TOKEN: comment,	 FOUND: identifier
-INPUT TOKEN: <#,	 FOUND: group_comment_start
-INPUT TOKEN: #>,	 FOUND: group_comment_end
-INPUT TOKEN: 5,	 FOUND: num_lit
-INPUT TOKEN: test,	 FOUND: identifier
-INPUT TOKEN: =,	 FOUND: assign_op
-INPUT TOKEN: "Test",	 FOUND: string_lit
-INPUT TOKEN: ;,	 FOUND: terminate
-FOUND 1 INVALID TOKENS
+word
+id_word
+assign_op
+INVALID TOKEN '"wtff\"' AT LINE 1
+INVALID TOKEN '??' AT LINE 1
+terminate
+roar
+parenthesis_start
+string_lit
+parenthesis_end
+terminate
+bool
+id_b1
+assign_op
+true_bool
+terminate
+bool
+id_b2
+assign_op
+false_bool
+terminate
+Total errors: 2
