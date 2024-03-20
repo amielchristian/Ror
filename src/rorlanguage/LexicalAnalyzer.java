@@ -42,6 +42,7 @@ public class LexicalAnalyzer {
                 str = str.replaceAll("#>", " #>");
                 str = str.replaceAll("<#", "<# ");
                 str = str.replaceAll("(?<!<)#(?!>)", " # ");
+                str = str.replaceAll(",", " , ");
                 
                 // add matched tokens in the line to a list
                 List<String> matchList = new ArrayList<>();
@@ -54,6 +55,7 @@ public class LexicalAnalyzer {
 
                 // write matched tokens in line to an output file
                 loop: for (String lexeme : matchList) {
+                    System.out.println(lexeme);
                     token = dfa.run(lexeme);
                     if (!groupCommentFound) {
                         switch (token)  {

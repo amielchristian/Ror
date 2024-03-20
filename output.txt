@@ -1,23 +1,12 @@
 
-word
-id_word
-assign_op
-INVALID TOKEN '"wtff\"' AT LINE 1
-INVALID TOKEN '??' AT LINE 1
-terminate
-roar
+id_repeat
 parenthesis_start
-string_lit
+id_x
+lt
+INVALID TOKEN '5,' AT LINE 1
+id_x
+increment_op
 parenthesis_end
-terminate
-bool
-id_b1
-assign_op
-true_bool
-terminate
-bool
-id_b2
-assign_op
-false_bool
-terminate
-Total errors: 2
+bracket_start
+bracket_end
+Total errors: 1
