@@ -27,7 +27,6 @@ public class SyntaxAnalyzer {
 
     public SyntaxAnalyzer(LexResult lr) {
         this.tokenQueue = new ArrayDeque<>(lr.tokens);
-        System.out.println(lr.tokens);
         this.lineTraceback = lr.lineTraceback;
         this.lookAhead = tokenQueue.poll();
         this.lineTracebackPointer = 0;
@@ -37,7 +36,7 @@ public class SyntaxAnalyzer {
     //<editor-fold defaultstate="collapsed" desc="Syntax Analyzer Functions">
     boolean parse() {
         try {
-            ptn = new ParseTreeNode("p");
+            ptn = new ParseTreeNode("<P>");
             P(ptn);
             System.out.println(ptn);
         } catch (SyntaxErrorException see) {
@@ -58,7 +57,7 @@ public class SyntaxAnalyzer {
     boolean match(String token, ParseTreeNode ptn) throws SyntaxErrorException {
 
         if (lookAhead.equals(token) && !tokenQueue.isEmpty()) {
-            ptn.addChild(token);
+            ptn.addNonTermChild(token);
             lookAhead = tokenQueue.poll();
             this.lineTracebackPointer++;
             return true;
@@ -101,7 +100,7 @@ public class SyntaxAnalyzer {
             }
 
             message = new StringBuilder()
-                    .append("Error occured at line " + line + ": " + lineWithError + "\n")
+                    .append("Error occured at line " + line+1 + ": " + lineWithError + "\n")
                     .append(error)
                     .toString();
             throw new SyntaxErrorException(message);
@@ -191,13 +190,6 @@ public class SyntaxAnalyzer {
         if (lookAhead.contains("id_")) {
             match(lookAhead, curPtn);
             ASSIGN(curPtn);
-            if (lookAhead.equals("terminate")) {
-                match("terminate", curPtn);
-                System.out.print("Assignment recognized");
-            } else {
-                System.out.println("Invalid, not terminated");
-                return;
-            }
         }
     }
 
@@ -220,7 +212,6 @@ public class SyntaxAnalyzer {
         trace("ARITHMETIC_OPERATION");
         ARITHMETIC_TERM(curPtn);
         ARITHMETIC_OPERATION_(curPtn);
-        System.out.println("Arithmetic operation recognized!");
     }
 
     void ARITHMETIC_OPERATION_(ParseTreeNode ptn) throws SyntaxErrorException {
