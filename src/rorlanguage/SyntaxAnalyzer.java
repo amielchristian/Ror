@@ -4,26 +4,30 @@
  */
 package rorlanguage;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Queue;
+import java.util.Set;
 
 /**
  *
  * @author Ivan
  */
 public class SyntaxAnalyzer {
+
     private ArrayList<String> tokenList;
     private String lookAhead;
-    private int ptr;
-    
+    private Queue<String> tokenQueue;
+
     public SyntaxAnalyzer(ArrayList<String> tokenList) {
-        this.tokenList = tokenList;
-        this.lookAhead = tokenList.get(0);
-        this.ptr = 0;
+        this.tokenQueue = new ArrayDeque<>(tokenList);
+        this.lookAhead = tokenQueue.peek();
     }
+
+    //<editor-fold defaultstate="collapsed" desc="Syntax Functions">
     boolean parse() {
-        //AO();
         P();
-        if (ptr+1 == tokenList.size()) {
+        if (tokenQueue.isEmpty()) {
             System.out.println("SUCCESS! Token List is empty");
             return true;
         } else {
@@ -34,81 +38,78 @@ public class SyntaxAnalyzer {
     void trace(String location) {
         System.out.println(location + ": " + lookAhead);
     }
-    
+
     boolean match(String token) {
         trace("Matching: " + token + " With: ");
-        if (lookAhead.equals(token) && (ptr+1 < tokenList.size())) {
-            lookAhead = tokenList.get(++ptr);
+        if (lookAhead.equals(token) && !tokenQueue.isEmpty()) {
+            lookAhead = tokenQueue.poll();
             return true;
-        } else    {
+        } else {
             return false;
         }
     }
-    
+
     boolean isInt(String token) {
         try {
             Integer.valueOf(token);
-        }
-        catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             return false;
         }
         return true;
     }
-    
+    //</editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="MAIN PROGRAM">
     // an entire program
-    void P()    {
+    void P() {
         S();
     }
-    
+
     // for matching statements
     // here, we have to determine the type of statement 
-    void S()    {
+    void S() {
         trace("S");
-        
+
         // declaration
-        if (lookAhead.equals("int") || lookAhead.equals("word") || lookAhead.equals("bool"))    {
+        if (lookAhead.equals("int") || lookAhead.equals("word") || lookAhead.equals("bool")) {
             D();
-        }
-        // assignment
-        else if (lookAhead.contains("id_"))  {
+        } // assignment
+        else if (lookAhead.contains("id_")) {
             A();
-        }
-        // conditional
-        else if (lookAhead.equals("if"))    {
+        } // conditional
+        else if (lookAhead.equals("if")) {
             // I();
             int a;
-        }
-        // repeat
-        else if (lookAhead.equals("repeat"))    {
+        } // repeat
+        else if (lookAhead.equals("repeat")) {
             // R();
             int b;
-        }
-        else if (lookAhead.equals("roar"))  {
+        } else if (lookAhead.equals("roar")) {
             // ROAR();
             int c;
-        }
-        else if (lookAhead.equals("nom"))   {
+        } else if (lookAhead.equals("nom")) {
             NOM();
-            if (lookAhead.equals("terminate"))  {
+            if (lookAhead.equals("terminate")) {
                 match("terminate");
             }
-        }
-        else    {
+        } else {
             return;
         }
-        
+
         System.out.println("Statement recognized!");
-        
+
         S();
     }
-    
-    void NOM()  {
+    // </editor-fold>
+
+    // 
+    void NOM() {
         trace("NOM");
-        if (lookAhead.equals("nom"))  {
+        if (lookAhead.equals("nom")) {
             match("nom");
             if (lookAhead.equals("parenthesis_start")) {
                 match("parenthesis_start");
-                if (lookAhead.equals("parenthesis_end"))    {
+                if (lookAhead.equals("parenthesis_end")) {
                     match("parenthesis_end");
                     System.out.println("Input statement recognized");
                 }
@@ -116,148 +117,138 @@ public class SyntaxAnalyzer {
         }
     }
 
-    // declaration/assignment statement
-    // modified: assignment can't have datatype
-    // <declaration> => <datatype> <identifier> [ assign_op (<literal> | <operation> | <input>) ] terminate
-    // <assignment> => <identifier> assign_op (<literal> | <operation> | <input>) terminate
-    void D()    {
+    // <editor-fold defaultstate="collapsed" desc="VARIABLE DECLERATION/ASSIGNMENT">
+    void D() {
         trace("D");
         DT();
-        if (lookAhead.contains("id_"))  {
+        if (lookAhead.contains("id_")) {
             match(lookAhead);
-            
+
             // allow the declaration to have an assignment  
-            if (lookAhead.equals("assign_op"))  {
+            if (lookAhead.equals("assign_op")) {
+                match("assign_op");
                 ASSIGN();
             }
-            
+
             // always terminate
-            if (lookAhead.equals("terminate"))  {
+            if (lookAhead.equals("terminate")) {
                 match("terminate");
                 System.out.print("Declaration recognized");
-            }
-            else    {
+            } else {
                 System.out.println("Invalid, not terminated");
                 return;
             }
-        }
-        else    {
+        } else {
             System.out.println("Invalid.");
             return;
         }
     }
-    void A()    {
+
+    void ASSIGN() {
+        trace("ASSIGN");
+
+        // match literals
+        if (lookAhead.contains("\"") || isInt(lookAhead) || lookAhead.equals("true_bool") || lookAhead.equals("false_bool")) {
+            match(lookAhead);
+        } // match input statement
+        else if (lookAhead.equals("nom")) {
+            NOM();
+        } // match operations
+        else if (lookAhead.equals("add_op")) {
+            ARITHMETIC_OPERATION();
+        } else {
+            return;
+        }
+    }
+
+    void A() {
         trace("A");
-        if (lookAhead.contains("id_"))  {
+        if (lookAhead.contains("id_")) {
             match(lookAhead);
             ASSIGN();
-            if (lookAhead.equals("terminate"))  {
+            if (lookAhead.equals("terminate")) {
                 match("terminate");
                 System.out.print("Assignment recognized");
-            }
-            else    {
+            } else {
                 System.out.println("Invalid, not terminated");
                 return;
             }
         }
     }
-    // "=" ( num_lit | string_lit | bool_lit | identifier | input_stmt )
-    void ASSIGN()   {
-        trace("ASSIGN");
-        if (lookAhead.equals("assign_op"))   {
-            match("assign_op");
-            
-            // match literals
-            if (lookAhead.contains("\"") || isInt(lookAhead) || lookAhead.equals("true_bool") || lookAhead.equals("false_bool"))    {
-                match(lookAhead);
-            }
-            // match input statement
-            else if (lookAhead.equals("nom"))   {
-                NOM();
-            }
-            // match operations
-            else    {
-                return;
-            }
-        }
-        else    {
-            return;
-        }
-    }
-    
-    // pano makakadistinguish between boolean and arithmetic?
-    // gawin ko arithmetic muna
-    void O()    {
-        trace("O");
-        AO();
-    }
-    
-    //    <arithmetic_operation> => <arithmetic_term> {(<add_op> | sub_op>) <arithmetic_term>}
-    //    <arithmetic_term> => <arithmetic_factor> { (<mul_op> | <div_op> | <mod_op>) <arithmetic_factor> }
-    //    <arithmetic_factor> => <int_literal> | <variable> [increment_operator | <decrement_operator>] | "(" <arithmetic_operation> ")"
-    // AO, AO_, AT, AT_, and AF are for matching arithmetic operations
-    void AO() {
-        trace("AO");
-        AT();
-        AO_();
+
+    // </editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="Arithmetic Operation">
+    void ARITHMETIC_OPERATION() {
+        trace("ARITHMETIC_OPERATION");
+        ARITHMETIC_TERM();
+        ARITHMETIC_OPERATION_();
         System.out.println("Arithmetic operation recognized!");
     }
-    void AO_() {
-        trace("AO_");
-        
+
+    void ARITHMETIC_OPERATION_() {
+        trace("ARITHMETIC_OPERATION_");
+
         if (lookAhead.equals("add_op")) {
             match("add_op");
-            AT();
+            ARITHMETIC_TERM();
         } else if (lookAhead.equals("sub_op")) {
             match("sub_op");
-            AT();
+            ARITHMETIC_TERM();
         } else {
             return;
         }
-        AO_();
+        ARITHMETIC_OPERATION_();
     }
-    void AT() {
-        trace("AT");
-        AF();
-        AT_();
+
+    void ARITHMETIC_TERM() {
+        trace("ARITHMETIC_TERM");
+        ARITHMETIC_FACTOR();
+        ARITHMETIC_TERM_();
     }
-    void AT_() {
-        trace("AT_");
+
+    void ARITHMETIC_TERM_() {
+        trace("ARITHMETIC_TERM_");
         if (lookAhead.equals("mult_op")) {
             match("mult_op");
-            AF();
+            ARITHMETIC_FACTOR();
         } else if (lookAhead.equals("div_op")) {
             match("div_op");
-            AF();
+            ARITHMETIC_FACTOR();
         } else {
             return;
         }
-        AT_();
+        ARITHMETIC_TERM_();
     }
-    void AF() {
-        trace("AF");
+
+    void ARITHMETIC_FACTOR() {
+        trace("ARITHMETIC_FACTOR");
         if (isInt(lookAhead)) {
             match(lookAhead);
         } else if (lookAhead.contains("id_")) {
             match(lookAhead);
+            OPTIONAL_OPERATOR();
         } else if (lookAhead.matches("parenthesis_start")) {
             match("parenthesis_start");
-            AO();
+            ARITHMETIC_OPERATION();
             match("parenthesis_end");
         }
     }
-    
-    // for matching datatypes
-    void DT()   {
+
+    void OPTIONAL_OPERATOR() {
+        trace("OPTIONAL_OPERATOR");
+    }
+    //</editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="DATATYPE MATCHING">
+    void DT() {
         trace("DT");
-        if (lookAhead.equals("int"))    {
+        if (lookAhead.equals("int")) {
             match("int");
-        }
-        else if (lookAhead.equals("word"))  {
+        } else if (lookAhead.equals("word")) {
             match("word");
-        }
-        else if (lookAhead.equals("bool"))  {
+        } else if (lookAhead.equals("bool")) {
             match("bool");
         }
     }
+    // </editor-fold>
 }

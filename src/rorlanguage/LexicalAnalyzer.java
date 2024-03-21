@@ -75,7 +75,7 @@ public class LexicalAnalyzer {
                                 outputTokens.add(lexeme);
                             }
                             case "" -> {
-                                output += "\nINVALID TOKEN '"+lexeme+"' AT LINE "+line;
+                                output += "\nINVALID TOKEN '" + lexeme + "' AT LINE "+line;
                                 errors++;
                                 return null;
                             }
