@@ -1,13 +1,24 @@
 
+int
 id_x
-add_op
-id_y
-add_op
+assign_op
+10
+terminate
+word
+id_word
+assign_op
+"hello"
+terminate
+bool
+id_a
+assign_op
+true_bool
+terminate
+int
+id_x
+assign_op
+nom
 parenthesis_start
-id_z
-mult_op
-num_lit
 parenthesis_end
-div_op
-num_lit
+terminate
 Total errors: 0
