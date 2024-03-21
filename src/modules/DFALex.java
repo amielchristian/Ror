@@ -147,14 +147,14 @@ class State {
 
     String goToNext(String c) {
         String edgeVal;
-//        System.out.println("Character: " + c    );
+        System.out.println("Character: " + c    );
         for (int i = 0; i < this.edges.size(); i++) {
             edgeVal = this.edges.get(i).val;
             
 //            System.out.println("Edge Value: " + edgeVal);
             
             if (edgeVal.equals(c)) {
-//                System.out.println("Next State:" + this.edges.get(i).pointsTo + "\n");
+                System.out.println("Next State:" + this.edges.get(i).pointsTo + "\n");
                 return this.edges.get(i).pointsTo;
             } else if (edgeVal.charAt(0) == '[') {
                 if(c.matches(edgeVal)) {
