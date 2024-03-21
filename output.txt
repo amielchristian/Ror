@@ -1,12 +1,1 @@
-id_x
-add_op
-id_y
-add_op
-parenthesis_start
-id_z
-mult_op
-num_lit
-parenthesis_end
-div_op
-num_lit
-Total errors: 0
+int

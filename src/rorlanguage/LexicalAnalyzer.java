@@ -62,7 +62,17 @@ public class LexicalAnalyzer {
                             case "identifier" -> {
                                 output += "\nid_"+lexeme;
                                 st.addToken("id_"+lexeme);
-                                outputTokens.add(token);
+                                outputTokens.add("id_"+lexeme);
+                            }
+                            case "num_lit" ->   {
+                                output += "\n"+lexeme;
+                                st.addToken(lexeme);
+                                outputTokens.add(lexeme);
+                            }
+                            case "string_lit" ->   {
+                                output += "\n"+lexeme;
+                                st.addToken(lexeme);
+                                outputTokens.add(lexeme);
                             }
                             case "" -> {
                                 output += "\nINVALID TOKEN '"+lexeme+"' AT LINE "+line;
