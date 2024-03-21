@@ -52,11 +52,11 @@ public class SyntaxAnalyzer {
     }
 
     void trace(String location) {
-//        System.out.println(location + ": " + lookAhead);
+        System.out.println(location + ": " + lookAhead);
     }
 
     boolean match(String token, ParseTreeNode ptn) throws SyntaxErrorException {
-
+//        System.out.println("MATCHING: " + token + " WITH lookAhead: " + lookAhead);
         if (lookAhead.equals(token) && !tokenQueue.isEmpty()) {
             ptn.addNonTermChild(token);
             lookAhead = tokenQueue.poll();
@@ -137,12 +137,10 @@ public class SyntaxAnalyzer {
                 A(curPtn);
             } // conditional
             else if (lookAhead.equals("if")) {
-                // I();
-                int a;
+                CONDITIONAL_STATEMENT(curPtn);
             } // repeat
             else if (lookAhead.equals("repeat")) {
                 // R();
-                int b;
             } else if (lookAhead.equals("roar")) {
                 ROAR(curPtn);
             } else if (lookAhead.equals("nom")) {
@@ -151,7 +149,12 @@ public class SyntaxAnalyzer {
                 curPtn.addChild("!epsilon");
                 return;
             }
-            match("terminate", curPtn);
+            if (lineTracebackPointer == lineTraceback.size() && lookAhead.equals("bracket_end")) {
+                match("bracket_end", curPtn);
+            } else {
+                match("terminate", curPtn);
+            } 
+            
             S(curPtn);
         } catch (SyntaxErrorException see) {
             throw new SyntaxErrorException(see.getMessage());
@@ -256,14 +259,24 @@ public class SyntaxAnalyzer {
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="CONDITIONAL STATEMENT">
+    void CONDITION(ParseTreeNode ptn) throws SyntaxErrorException {
+        ParseTreeNode curPtn = ptn.addChild("CONDITION");
+        trace("CONDITION");
+
+        if (lookAhead.equals("or") || lookAhead.equals("and") || lookAhead.equals("not") || lookAhead.equals("parenthesis_start")) {
+            LOGICAL_OPERATION__(curPtn);
+        } else if (lookAhead.equals("equal_rel") || lookAhead.equals("not_equal_rel") || lookAhead.equals("lt") || lookAhead.equals("lte") || lookAhead.equals("gt") || lookAhead.equals("gte")) {
+            RELATIONAL_OPERATION(curPtn);
+        } else {
+            return;
+        }
+
+    }
+
     void CONDITIONAL_STATEMENT(ParseTreeNode ptn) throws SyntaxErrorException {
         ParseTreeNode curPtn = ptn.addChild("CONDITIONAL_STATEMENT");
         trace("CONDITIONAL_STATEMENT");
         CONDITIONAL_STATEMENT_(curPtn);
-        if (lookAhead.equals("else")) {
-            match("else", curPtn);
-            ELSE_STATEMENT(curPtn);
-        }
         System.out.println("Conditional Statement Recognized!");
 
     }
@@ -279,12 +292,8 @@ public class SyntaxAnalyzer {
     void ELSE_STATEMENT(ParseTreeNode ptn) throws SyntaxErrorException {
         ParseTreeNode curPtn = ptn.addChild("ELSE_STATEMENT");
         trace("ELSE_STATEMENT");
-        if (lookAhead.equals("bracket_start")) {
-            match("bracket_start", curPtn);
 
-            STATEMENT_LOOP(curPtn);
-
-        }
+        STATEMENT_LOOP(curPtn);
     }
 
     void IF_STATEMENT(ParseTreeNode ptn) throws SyntaxErrorException {
@@ -293,9 +302,15 @@ public class SyntaxAnalyzer {
         if (lookAhead.equals("if")) {
             match("if", curPtn);
             match("parenthesis_start", curPtn);
-            // CONDITION
+            if (lookAhead.equals("parenthesis_start")) {
+                ARITHMETIC_OPERATION(curPtn);
+            } else if (lookAhead.contains("id_")) {
+                match(lookAhead, curPtn);
+            } else if (isInt(lookAhead)) {
+                match(lookAhead, curPtn);
+            }
+            CONDITION(curPtn);
             match("parenthesis_end", curPtn);
-
             match("bracket_start", curPtn);
             STATEMENT_LOOP(curPtn);
 
@@ -307,7 +322,12 @@ public class SyntaxAnalyzer {
         trace("ELSE_IF_STATEMENT_LOOP");
         if (lookAhead.equals("else")) {
             match("else", curPtn);
-            IF_STATEMENT(curPtn);
+            if (lookAhead.equals("if")) {
+                IF_STATEMENT(curPtn);
+            } else if (lookAhead.equals("bracket_start")) {
+                match("bracket_start", curPtn);
+                ELSE_STATEMENT(curPtn);
+            }
             ELSE_IF_STATEMENT_LOOP(curPtn);
         } else {
             return;
@@ -384,10 +404,11 @@ public class SyntaxAnalyzer {
             ParseTreeNode curPtn = ptn.addChild("ARITHMETIC_TERM_");
             trace("ARITHMETIC_TERM_");
             if (lookAhead.equals("mult_op")) {
+                match("mult_op", curPtn);
                 if (!(lookAhead.contains("id_") || isInt(lookAhead) || lookAhead.contains("parenthesis_start"))) {
                     handleError("Expected: num_lit/identifier/parenthesis_start\nBut got: " + lookAhead);
                 }
-                match("mult_op", curPtn);
+                ARITHMETIC_FACTOR(curPtn);
             } else if (lookAhead.equals("div_op")) {
                 match("div_op", curPtn);
                 if (!(lookAhead.contains("id_") || isInt(lookAhead) || lookAhead.contains("parenthesis_start"))) {
@@ -449,7 +470,7 @@ public class SyntaxAnalyzer {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Logical Operation">
-    void LOGICAL_OPERTATION(ParseTreeNode ptn) throws SyntaxErrorException {
+    void LOGICAL_OPERATION(ParseTreeNode ptn) throws SyntaxErrorException {
         ParseTreeNode curPtn = ptn.addChild("LOGICAL_OPERATION");
         trace("LO"); // pang track lang kung nasaang function
         LOGICAL_TERM(curPtn); // kapag non-terminal
@@ -457,16 +478,33 @@ public class SyntaxAnalyzer {
         System.out.println("Logical operation recognized!");
 
     }
+
     void LOGICAL_OPERATION_(ParseTreeNode ptn) throws SyntaxErrorException {
         ParseTreeNode curPtn = ptn.addChild("LOGICAL_OPERATION");
         trace("LO_");
         if (lookAhead.equals("or")) {
             match("or", curPtn);
         } else {
+            curPtn.addChild("!epsilon");
             return;
         }
 
         LOGICAL_TERM(curPtn);
+        LOGICAL_OPERATION_(curPtn);
+    }
+    
+    void LOGICAL_OPERATION__(ParseTreeNode ptn) throws SyntaxErrorException {
+        ParseTreeNode curPtn = ptn.addChild("LOGICAL_OPERATION");
+        trace("LO_");
+        if (lookAhead.equals("or")) {
+            match("or", curPtn);
+            LOGICAL_TERM(curPtn);
+        } else {
+            match("and", curPtn);
+            LOGICAL_FACTOR(curPtn);
+        }
+
+        
         LOGICAL_OPERATION_(curPtn);
     }
 
@@ -476,19 +514,7 @@ public class SyntaxAnalyzer {
         LOGICAL_FACTOR(curPtn);
         LOGICAL_TERM_(curPtn);
     }
-
     
-
-    void LOGICAL_FACTOR(ParseTreeNode ptn) throws SyntaxErrorException {
-        ParseTreeNode curPtn = ptn.addChild("LOGICAL_OPERATION");
-        trace("LF");
-        if (lookAhead.equals("not")) {
-            match("not", curPtn);
-        }
-        LOGICAL_FACTOR_(curPtn);
-
-    }
-
     void LOGICAL_TERM_(ParseTreeNode ptn) throws SyntaxErrorException {
         ParseTreeNode curPtn = ptn.addChild("LOGICAL_OPERATION");
         trace("LT_");
@@ -501,18 +527,29 @@ public class SyntaxAnalyzer {
         LOGICAL_FACTOR(curPtn);
         LOGICAL_TERM_(curPtn);
     }
+    
+    void LOGICAL_FACTOR(ParseTreeNode ptn) throws SyntaxErrorException {
+        ParseTreeNode curPtn = ptn.addChild("LOGICAL_OPERATION");
+        trace("LF");
+        if (lookAhead.equals("not")) {
+            match("not", curPtn);
+        }
+        LOGICAL_FACTOR_(curPtn);
+
+    }
+    
 
     void LOGICAL_FACTOR_(ParseTreeNode ptn) throws SyntaxErrorException {
         ParseTreeNode curPtn = ptn.addChild("LOGICAL_OPERATION");
         trace("LF_");
         if (lookAhead.equals("parenthesis_start")) {
             match("parenthesis_start", curPtn);
-            LOGICAL_OPERTATION(curPtn);
+            LOGICAL_OPERATION(curPtn);
             if (lookAhead.equals("parenthesis_end")) {
                 match("parenthesis_end", curPtn);
             }
         } else if (lookAhead.contains("id_")) {
-            match("id_", curPtn);
+            match(lookAhead, curPtn);
         } else if (lookAhead.equals("true_bool")) {
             match("true_bool", curPtn);
         } else if (lookAhead.equals("false_bool")) {
@@ -527,8 +564,14 @@ public class SyntaxAnalyzer {
     void RELATIONAL_OPERATION(ParseTreeNode ptn) throws SyntaxErrorException {
         ParseTreeNode curPtn = ptn.addChild("RELATIONAL_OPERATION");
         trace("RELATIONAL_OPERATION");
-        ARITHMETIC_OPERATION(curPtn);
         RELATIONAL_OPERATORS(curPtn);
+        if (lookAhead.equals("parenthesis_start")) {
+            ARITHMETIC_OPERATION(curPtn);
+        } else if (lookAhead.contains("id_")) {
+            match(lookAhead, curPtn);
+        } else if (isInt(lookAhead)) {
+            match(lookAhead, curPtn);
+        }
         System.out.println("Relational operation recognized!");
     }
 
@@ -536,6 +579,8 @@ public class SyntaxAnalyzer {
         ParseTreeNode curPtn = ptn.addChild("RELATIONAL_OPERATORS");
         trace("RELATIONAL_OPERATORS");
         if (lookAhead.equals("equal_rel")) {
+            match(lookAhead, curPtn);
+        } else if (lookAhead.equals("not_equal_rel")) {
             match(lookAhead, curPtn);
         }
         if (lookAhead.equals("lt")) {

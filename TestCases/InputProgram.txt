@@ -1,1 +1,8 @@
-Int y = (x+1+());
+If (x > 5) {
+    Int i = x * 3;
+} Else If (x And y) {
+    Word str = "hello world!";
+} Else {
+    Int x = 5 + 7;
+    Int x = 5 + 6;
+}
