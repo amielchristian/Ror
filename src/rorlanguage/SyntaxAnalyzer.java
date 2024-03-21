@@ -177,7 +177,7 @@ public class SyntaxAnalyzer {
         else if (lookAhead.equals("nom")) {
             NOM(curPtn);
         } // match operations
-        else if (lookAhead.equals("add_op")) {
+        else if (lookAhead.contains("id_") || isInt(lookAhead) || lookAhead.contains("parenthesis_start")) {
             ARITHMETIC_OPERATION(curPtn);
         } else {
             curPtn.addChild("!epsilon");
@@ -256,7 +256,10 @@ public class SyntaxAnalyzer {
         } else if (lookAhead.equals("div_op")) {
             match("div_op", curPtn);
             ARITHMETIC_FACTOR(curPtn);
-        } else {
+        } else if (lookAhead.equals("modulo_op")) {
+            match("modulo_op", curPtn);
+            ARITHMETIC_FACTOR(curPtn);
+        }else {
             curPtn.addChild("!epsilon");
             return;
         }
@@ -270,7 +273,10 @@ public class SyntaxAnalyzer {
             match(lookAhead, curPtn);
         } else if (lookAhead.contains("id_")) {
             match(lookAhead, curPtn);
-            OPTIONAL_OPERATOR(curPtn);
+            if (lookAhead.equals("increment_op") || lookAhead.equals("decrement_op"))   {   
+                OPTIONAL_OPERATOR(curPtn);
+            }
+            
         } else if (lookAhead.matches("parenthesis_start")) {
             match("parenthesis_start", curPtn);
             ARITHMETIC_OPERATION(curPtn);
@@ -278,9 +284,10 @@ public class SyntaxAnalyzer {
         }
     }
 
-    void OPTIONAL_OPERATOR(ParseTreeNode ptn) {
+    void OPTIONAL_OPERATOR(ParseTreeNode ptn) throws SyntaxErrorException {
         ParseTreeNode curPtn = ptn.addChild("OPTIONAL_OPERATOR");
         trace("OPTIONAL_OPERATOR");
+        match(lookAhead, curPtn);
     }
     //</editor-fold>
 

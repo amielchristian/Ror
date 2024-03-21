@@ -1,9 +1,11 @@
 
 int
-id_x
+id_y
 assign_op
-nom
 parenthesis_start
+id_x
+modulo_op
+2
 parenthesis_end
 terminate
 Total errors: 0
