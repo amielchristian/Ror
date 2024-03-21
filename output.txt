@@ -1,12 +1,12 @@
-
-id_repeat
+id_x
+add_op
+id_y
+add_op
 parenthesis_start
-id_x
-lt
-INVALID TOKEN '5,' AT LINE 1
-id_x
-increment_op
+id_z
+mult_op
+num_lit
 parenthesis_end
-bracket_start
-bracket_end
-Total errors: 1
+div_op
+num_lit
+Total errors: 0
