@@ -4,29 +4,45 @@
  */
 package rorlanguage;
 
+import modules.LexResult;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Queue;
-import java.util.Set;
+import modules.ParseTreeNode;
 
 /**
  *
  * @author Ivan
  */
 public class SyntaxAnalyzer {
+
     private ArrayList<Integer> lineTraceback;
     private String lookAhead;
     private Queue<String> tokenQueue;
+    private int lineTracebackPointer;
+    private ParseTreeNode ptn;
 
     public SyntaxAnalyzer(LexResult lr) {
         this.tokenQueue = new ArrayDeque<>(lr.tokens);
+        System.out.println(lr.tokens);
         this.lineTraceback = lr.lineTraceback;
-        this.lookAhead = tokenQueue.peek();
+        this.lookAhead = tokenQueue.poll();
+        this.lineTracebackPointer = 0;
+        this.ptn = new ParseTreeNode("P");
     }
 
-    //<editor-fold defaultstate="collapsed" desc="Syntax Functions">
+    //<editor-fold defaultstate="collapsed" desc="Syntax Analyzer Functions">
     boolean parse() {
-        P();
+        try {
+            ptn = new ParseTreeNode("p");
+            P(ptn);
+            System.out.println(ptn);
+        } catch (SyntaxErrorException see) {
+            see.printStackTrace();
+        }
         if (tokenQueue.isEmpty()) {
             System.out.println("SUCCESS! Token List is empty");
             return true;
@@ -39,12 +55,19 @@ public class SyntaxAnalyzer {
         System.out.println(location + ": " + lookAhead);
     }
 
-    boolean match(String token) {
-        trace("Matching: " + token + " With: ");
+    boolean match(String token, ParseTreeNode ptn) throws SyntaxErrorException {
+
         if (lookAhead.equals(token) && !tokenQueue.isEmpty()) {
+            ptn.addChild(token);
             lookAhead = tokenQueue.poll();
+            this.lineTracebackPointer++;
+            return true;
+        } else if (lookAhead.equals(token) && tokenQueue.isEmpty()){
+            ptn.addChild(token);
+            this.lineTracebackPointer++;
             return true;
         } else {
+            handleError("Expected: " + token + "\nBut got: " + lookAhead);
             return false;
         }
     }
@@ -57,25 +80,55 @@ public class SyntaxAnalyzer {
         }
         return true;
     }
+
+    void handleError(String error) throws SyntaxErrorException {
+        String str, lineWithError, message;
+        String output = "";
+        ArrayList<String> outputTokens = new ArrayList<>();
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(new File("TestCases/InputProgram.txt")));
+            int line = 0;
+            int errors = 0;
+            boolean groupCommentFound = false;
+            lineWithError = "";
+            while ((str = br.readLine()) != null) {
+                if (line == lineTraceback.get(lineTracebackPointer - 1) - 1) {
+                    lineWithError = str;
+                    break;
+                } else {
+                    line++;
+                }
+            }
+
+            message = new StringBuilder()
+                    .append("Error occured at line " + line + ": " + lineWithError + "\n")
+                    .append(error)
+                    .toString();
+            throw new SyntaxErrorException(message);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     //</editor-fold>
 
-    // <editor-fold defaultstate="collapsed" desc="MAIN PROGRAM">
+    // <editor-fold defaultstate="collapsed" desc="OVERALL PROGRAM">
     // an entire program
-    void P() {
-        S();
+    void P(ParseTreeNode ptn) throws SyntaxErrorException {
+        S(ptn);
     }
 
     // for matching statements
     // here, we have to determine the type of statement 
-    void S() {
+    void S(ParseTreeNode ptn) throws SyntaxErrorException {
+        ParseTreeNode curPtn = ptn.addChild("S");
         trace("S");
-
         // declaration
         if (lookAhead.equals("int") || lookAhead.equals("word") || lookAhead.equals("bool")) {
-            D();
+            D(curPtn);
         } // assignment
         else if (lookAhead.contains("id_")) {
-            A();
+            A(curPtn);
         } // conditional
         else if (lookAhead.equals("if")) {
             // I();
@@ -88,86 +141,58 @@ public class SyntaxAnalyzer {
             // ROAR();
             int c;
         } else if (lookAhead.equals("nom")) {
-            NOM();
-            if (lookAhead.equals("terminate")) {
-                match("terminate");
-            }
+            NOM(curPtn);
         } else {
+            curPtn.addChild("!epsilon");
             return;
         }
-
-        System.out.println("Statement recognized!");
-
-        S();
+        match("terminate", curPtn);
+        S(curPtn);
     }
     // </editor-fold>
 
-    // 
-    void NOM() {
-        trace("NOM");
-        if (lookAhead.equals("nom")) {
-            match("nom");
-            if (lookAhead.equals("parenthesis_start")) {
-                match("parenthesis_start");
-                if (lookAhead.equals("parenthesis_end")) {
-                    match("parenthesis_end");
-                    System.out.println("Input statement recognized");
-                }
-            }
-        }
-    }
-
     // <editor-fold defaultstate="collapsed" desc="VARIABLE DECLERATION/ASSIGNMENT">
-    void D() {
+    void D(ParseTreeNode ptn) throws SyntaxErrorException {
+        ParseTreeNode curPtn = ptn.addChild("D");
         trace("D");
-        DT();
+        DT(curPtn);
         if (lookAhead.contains("id_")) {
-            match(lookAhead);
-
-            // allow the declaration to have an assignment  
-            if (lookAhead.equals("assign_op")) {
-                match("assign_op");
-                ASSIGN();
-            }
-
-            // always terminate
-            if (lookAhead.equals("terminate")) {
-                match("terminate");
-                System.out.print("Declaration recognized");
-            } else {
-                System.out.println("Invalid, not terminated");
-                return;
-            }
+            match(lookAhead, curPtn);
+            match("assign_op", curPtn);
+            ASSIGN(curPtn);
         } else {
-            System.out.println("Invalid.");
+            curPtn.addChild("!epsilon");
             return;
         }
     }
 
-    void ASSIGN() {
+    void ASSIGN(ParseTreeNode ptn) throws SyntaxErrorException {
+        ParseTreeNode curPtn = ptn.addChild("ASSIGN");
         trace("ASSIGN");
 
         // match literals
-        if (lookAhead.contains("\"") || isInt(lookAhead) || lookAhead.equals("true_bool") || lookAhead.equals("false_bool")) {
-            match(lookAhead);
+        if (lookAhead.contains("\"") || lookAhead.equals("true_bool") || lookAhead.equals("false_bool")) {
+            match(lookAhead, curPtn);
         } // match input statement
         else if (lookAhead.equals("nom")) {
-            NOM();
+            NOM(curPtn);
         } // match operations
         else if (lookAhead.equals("add_op")) {
-            ARITHMETIC_OPERATION();
+            ARITHMETIC_OPERATION(curPtn);
         } else {
+            curPtn.addChild("!epsilon");
             return;
         }
     }
 
-    void A() {
+    void A(ParseTreeNode ptn) throws SyntaxErrorException {
+        ParseTreeNode curPtn = ptn.addChild("A");
         trace("A");
         if (lookAhead.contains("id_")) {
-            match(lookAhead);
-            ASSIGN();
+            match(lookAhead, curPtn);
+            ASSIGN(curPtn);
             if (lookAhead.equals("terminate")) {
-                match("terminate");
+                match("terminate", curPtn);
                 System.out.print("Assignment recognized");
             } else {
                 System.out.println("Invalid, not terminated");
@@ -177,78 +202,114 @@ public class SyntaxAnalyzer {
     }
 
     // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="I/O STATEMENTS">
+    void NOM(ParseTreeNode ptn) throws SyntaxErrorException {
+        ParseTreeNode curPtn = ptn.addChild("NOM");
+        trace("NOM");
+        if (lookAhead.equals("nom")) {
+            match("nom", curPtn);
+            match("parenthesis_start", curPtn);
+            match("parenthesis_end", curPtn);
+        }
+    }
+
+    // </editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Arithmetic Operation">
-    void ARITHMETIC_OPERATION() {
+    void ARITHMETIC_OPERATION(ParseTreeNode ptn) throws SyntaxErrorException {
+        ParseTreeNode curPtn = ptn.addChild("ARITHMETIC_OPERATION");
         trace("ARITHMETIC_OPERATION");
-        ARITHMETIC_TERM();
-        ARITHMETIC_OPERATION_();
+        ARITHMETIC_TERM(curPtn);
+        ARITHMETIC_OPERATION_(curPtn);
         System.out.println("Arithmetic operation recognized!");
     }
 
-    void ARITHMETIC_OPERATION_() {
+    void ARITHMETIC_OPERATION_(ParseTreeNode ptn) throws SyntaxErrorException {
+        ParseTreeNode curPtn = ptn.addChild("ARITHMETIC_OPERATION_");
         trace("ARITHMETIC_OPERATION_");
 
         if (lookAhead.equals("add_op")) {
-            match("add_op");
-            ARITHMETIC_TERM();
+            match("add_op", curPtn);
+            ARITHMETIC_TERM(curPtn);
         } else if (lookAhead.equals("sub_op")) {
-            match("sub_op");
-            ARITHMETIC_TERM();
+            match("sub_op", curPtn);
+            ARITHMETIC_TERM(curPtn);
         } else {
+            curPtn.addChild("!epsilon");
             return;
         }
-        ARITHMETIC_OPERATION_();
+        ARITHMETIC_OPERATION_(curPtn);
     }
 
-    void ARITHMETIC_TERM() {
+    void ARITHMETIC_TERM(ParseTreeNode ptn) throws SyntaxErrorException {
+        ParseTreeNode curPtn = ptn.addChild("ARITHMETIC_TERM");
         trace("ARITHMETIC_TERM");
-        ARITHMETIC_FACTOR();
-        ARITHMETIC_TERM_();
+        ARITHMETIC_FACTOR(curPtn);
+        ARITHMETIC_TERM_(curPtn);
     }
 
-    void ARITHMETIC_TERM_() {
+    void ARITHMETIC_TERM_(ParseTreeNode ptn) throws SyntaxErrorException {
+        ParseTreeNode curPtn = ptn.addChild("ARITHMETIC_TERM_");
         trace("ARITHMETIC_TERM_");
         if (lookAhead.equals("mult_op")) {
-            match("mult_op");
-            ARITHMETIC_FACTOR();
+            match("mult_op", curPtn);
+            ARITHMETIC_FACTOR(curPtn);
         } else if (lookAhead.equals("div_op")) {
-            match("div_op");
-            ARITHMETIC_FACTOR();
+            match("div_op", curPtn);
+            ARITHMETIC_FACTOR(curPtn);
         } else {
+            curPtn.addChild("!epsilon");
             return;
         }
-        ARITHMETIC_TERM_();
+        ARITHMETIC_TERM_(curPtn);
     }
 
-    void ARITHMETIC_FACTOR() {
+    void ARITHMETIC_FACTOR(ParseTreeNode ptn) throws SyntaxErrorException {
+        ParseTreeNode curPtn = ptn.addChild("ARITHMETIC_FACTOR");
         trace("ARITHMETIC_FACTOR");
         if (isInt(lookAhead)) {
-            match(lookAhead);
+            match(lookAhead, curPtn);
         } else if (lookAhead.contains("id_")) {
-            match(lookAhead);
-            OPTIONAL_OPERATOR();
+            match(lookAhead, curPtn);
+            OPTIONAL_OPERATOR(curPtn);
         } else if (lookAhead.matches("parenthesis_start")) {
-            match("parenthesis_start");
-            ARITHMETIC_OPERATION();
-            match("parenthesis_end");
+            match("parenthesis_start", curPtn);
+            ARITHMETIC_OPERATION(curPtn);
+            match("parenthesis_end", curPtn);
         }
     }
 
-    void OPTIONAL_OPERATOR() {
+    void OPTIONAL_OPERATOR(ParseTreeNode ptn) {
+        ParseTreeNode curPtn = ptn.addChild("OPTIONAL_OPERATOR");
         trace("OPTIONAL_OPERATOR");
     }
     //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="Logical Operation">
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="Relational Operation">
+    //</editor-fold>
     // <editor-fold defaultstate="collapsed" desc="DATATYPE MATCHING">
-    void DT() {
+    void DT(ParseTreeNode ptn) throws SyntaxErrorException {
+        ParseTreeNode curPtn = ptn.addChild("DT");
         trace("DT");
         if (lookAhead.equals("int")) {
-            match("int");
+            match("int", curPtn);
         } else if (lookAhead.equals("word")) {
-            match("word");
+            match("word", curPtn);
         } else if (lookAhead.equals("bool")) {
-            match("bool");
+            match("bool", curPtn);
         }
     }
     // </editor-fold>
+}
+
+class SyntaxErrorException extends Exception {
+
+    public SyntaxErrorException() {
+        super();
+    }
+
+    public SyntaxErrorException(String message) {
+        super(message);
+    }
 }

@@ -1,5 +1,6 @@
 package rorlanguage;
 
+import modules.LexResult;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -76,7 +77,7 @@ public class LexicalAnalyzer {
                                 outputTokens.add(lexeme);
                             }
                             case "" -> {
-                                output += "\nINVALID TOKEN '" + lexeme + "' AT LINE "+line;
+                                output += "\nINVALID TOKEN '"+lexeme+"' AT LINE "+line;
                                 errors++;
                                 return null;
                             }

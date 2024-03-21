@@ -4,6 +4,7 @@
  */
 package rorlanguage;
 
+import modules.LexResult;
 import java.util.ArrayList;
 import modules.DFALex;
 import modules.SymbolTable;

@@ -8,3 +8,7 @@ nbproject/private/private.xml
 nbproject/project.properties
 nbproject/project.xml
 output.txt
+nbproject/private/private.properties
+*.xml
+/nbproject
+*.properties
