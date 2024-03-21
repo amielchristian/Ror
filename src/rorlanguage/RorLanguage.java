@@ -18,8 +18,8 @@ public class RorLanguage {
         String dfaFile = "dfa.json";
         DFALex dfa = new DFALex(dfaFile);
         SymbolTable st = new SymbolTable();
-        ArrayList<String> tokenArray = la.runTestProgram(dfa, st);
-        SyntaxAnalyzer sa = new SyntaxAnalyzer(tokenArray);
+        LexResult lr = la.runTestProgram(dfa, st);
+        SyntaxAnalyzer sa = new SyntaxAnalyzer(lr);
         sa.parse();
     }
 }

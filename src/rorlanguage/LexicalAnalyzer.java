@@ -12,9 +12,10 @@ import modules.DFALex;
 import modules.SymbolTable;
 
 public class LexicalAnalyzer {
-    public ArrayList<String> runTestProgram(DFALex dfa, SymbolTable st) {
+    public LexResult runTestProgram(DFALex dfa, SymbolTable st) {
         String str, token;
         String output = "";
+        ArrayList<Integer> lineTraceback = new ArrayList<>();
         ArrayList<String> outputTokens = new ArrayList<>();
         try {
             BufferedReader br = new BufferedReader(new FileReader(new File("TestCases/InputProgram.txt")));
@@ -84,6 +85,7 @@ public class LexicalAnalyzer {
                             }
                             case "group_comment_start" -> groupCommentFound = true;
                         }
+                    lineTraceback.add(line);
                     }
                     else    {
                         if (token.equals("group_comment_end"))
@@ -100,7 +102,7 @@ public class LexicalAnalyzer {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return outputTokens;
+        return new LexResult(outputTokens, lineTraceback);
     }
     
 }

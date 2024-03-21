@@ -14,13 +14,13 @@ import java.util.Set;
  * @author Ivan
  */
 public class SyntaxAnalyzer {
-
-    private ArrayList<String> tokenList;
+    private ArrayList<Integer> lineTraceback;
     private String lookAhead;
     private Queue<String> tokenQueue;
 
-    public SyntaxAnalyzer(ArrayList<String> tokenList) {
-        this.tokenQueue = new ArrayDeque<>(tokenList);
+    public SyntaxAnalyzer(LexResult lr) {
+        this.tokenQueue = new ArrayDeque<>(lr.tokens);
+        this.lineTraceback = lr.lineTraceback;
         this.lookAhead = tokenQueue.peek();
     }
 
