@@ -12,20 +12,10 @@ import modules.DFALex;
 import modules.SymbolTable;
 
 public class LexicalAnalyzer {
-    public static void main(String[] args)  {
-        String dfaFile = "dfa.json";
-        
-        SymbolTable st = new SymbolTable();
-        DFALex dfa = new DFALex(dfaFile);
-//        runTestProgram(dfa);
-    
-        runTestProgram(dfa, st);
-        System.out.println(st.toString());
-    }
-    
-    static void runTestProgram(DFALex dfa, SymbolTable st) {
+    public ArrayList<String> runTestProgram(DFALex dfa, SymbolTable st) {
         String str, token;
         String output = "";
+        ArrayList<String> outputTokens = new ArrayList<>();
         try {
             BufferedReader br = new BufferedReader(new FileReader(new File("TestCases/InputProgram.txt")));
             int line = 0;
@@ -44,6 +34,10 @@ public class LexicalAnalyzer {
                 str = str.replaceAll("#>", " #>");
                 str = str.replaceAll("<#", "<# ");
                 str = str.replaceAll("(?<!<)#(?!>)", " # ");
+                str = str.replaceAll("\\+", " + ");
+                str = str.replaceAll("\\-", " - ");
+                str = str.replaceAll("\\/", " / ");
+                str = str.replaceAll("\\*", " * ");
                 
                 // add matched tokens in the line to a list
                 List<String> matchList = new ArrayList<>();
@@ -53,20 +47,25 @@ public class LexicalAnalyzer {
                 while (regexMatcher.find()) {
                     matchList.add(regexMatcher.group());
                 }
-
+                
                 // write matched tokens in line to an output file
                 loop: for (String lexeme : matchList) {
                     token = dfa.run(lexeme);
                     if (!groupCommentFound) {
                         switch (token)  {
-                            default -> output += "\n"+token;
+                            default -> {
+                                output += "\n"+token;
+                                outputTokens.add(token);
+                            }
                             case "identifier" -> {
                                 output += "\nid_"+lexeme;
                                 st.addToken("id_"+lexeme);
+                                outputTokens.add(token);
                             }
                             case "" -> {
                                 output += "\nINVALID TOKEN '"+lexeme+"' AT LINE "+line;
                                 errors++;
+                                return null;
                             }
                             case "single_comment" -> {
                                 break loop; // move on to next line
@@ -89,11 +88,7 @@ public class LexicalAnalyzer {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
-    }
-    
-    static void runShiftReduce(DFALex dfa) {
-        
+        return outputTokens;
     }
     
 }

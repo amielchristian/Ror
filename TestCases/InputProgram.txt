@@ -1,5 +1,1 @@
-Word word = "wtff\" ??";
-Roar("wtf"");
-
-Bool b1 = True;
-Bool b2 = False;
+x + y + (z * 48)/6
