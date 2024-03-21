@@ -17,6 +17,8 @@ public class LexicalAnalyzer {
         
         SymbolTable st = new SymbolTable();
         DFALex dfa = new DFALex(dfaFile);
+//        runTestProgram(dfa);
+    
         runTestProgram(dfa, st);
         System.out.println(st.toString());
     }
@@ -89,6 +91,10 @@ public class LexicalAnalyzer {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        
+    }
+    
+    static void runShiftReduce(DFALex dfa) {
         
     }
     
