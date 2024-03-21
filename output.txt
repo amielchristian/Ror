@@ -15,7 +15,6 @@ nom
 parenthesis_start
 parenthesis_end
 terminate
-int
 id_x
 assign_op
 id_x
@@ -31,5 +30,15 @@ add_op
 id_z
 parenthesis_end
 parenthesis_end
+terminate
+roar
+parenthesis_start
+"hello world!"
+parenthesis_end
+terminate
+int
+id_a
+assign_op
+10
 terminate
 Total errors: 0

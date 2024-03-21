@@ -137,8 +137,7 @@ public class SyntaxAnalyzer {
             // R();
             int b;
         } else if (lookAhead.equals("roar")) {
-            // ROAR();
-            int c;
+            ROAR(curPtn);
         } else if (lookAhead.equals("nom")) {
             NOM(curPtn);
         } else {
@@ -189,6 +188,7 @@ public class SyntaxAnalyzer {
         trace("A");
         if (lookAhead.contains("id_")) {
             match(lookAhead, curPtn);
+            match("assign_op", curPtn);
             ASSIGN(curPtn);
         }
     }
@@ -201,6 +201,18 @@ public class SyntaxAnalyzer {
         if (lookAhead.equals("nom")) {
             match("nom", curPtn);
             match("parenthesis_start", curPtn);
+            match("parenthesis_end", curPtn);
+        }
+    }
+    void ROAR(ParseTreeNode ptn) throws SyntaxErrorException {
+        ParseTreeNode curPtn = ptn.addChild("ROAR");
+        trace("ROAR");
+        if (lookAhead.equals("roar"))   {
+            match("roar", curPtn);
+            match("parenthesis_start", curPtn);
+            if (lookAhead.contains("\""))   {
+                match(lookAhead, curPtn);
+            }
             match("parenthesis_end", curPtn);
         }
     }
