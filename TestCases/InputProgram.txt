@@ -1,5 +1,1 @@
-Int y = (x % 2);
-Int x = Nom();
-x = x + y * (3 /(5 + z));
-Roar("hello world!");
-Int a = 10; 
+Int y = (x+1+());
