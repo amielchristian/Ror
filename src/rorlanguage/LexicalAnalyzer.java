@@ -41,6 +41,8 @@ public class LexicalAnalyzer {
                 str = str.replaceAll(",", " , ");
                 str = str.replaceAll(" \\-  \\- ",  " -- ");
                 str = str.replaceAll(" \\+  \\+ ",  " ++ ");
+                str = str.replaceAll("\\{", " { ");
+                str = str.replaceAll("\\}", " } ");
                 
                 // add matched tokens in the line to a list
                 List<String> matchList = new ArrayList<>();

@@ -8,6 +8,7 @@ import modules.LexResult;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.PrintWriter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Queue;
@@ -39,6 +40,7 @@ public class SyntaxAnalyzer {
             ptn = new ParseTreeNode("<P>");
             P(ptn);
             System.out.println(ptn);
+            exportParseTree(ptn.toString());
         } catch (SyntaxErrorException see) {
             see.printStackTrace();
             return false;
@@ -67,7 +69,7 @@ public class SyntaxAnalyzer {
             this.lineTracebackPointer++;
             return true;
         } else {
-            handleError("Expected: " + token + "\nBut got: " + lookAhead);
+            handleError("Expected: " + token + "\nGot: " + lookAhead);
             return false;
         }
     }
@@ -82,29 +84,49 @@ public class SyntaxAnalyzer {
     }
 
     void handleError(String error) throws SyntaxErrorException {
-        String str, lineWithError, message;
-        String output = "";
-        ArrayList<String> outputTokens = new ArrayList<>();
+        String str, before, lineWithError, after, message;
+        ArrayList<String> codeLines = new ArrayList<>();
         try {
             BufferedReader br = new BufferedReader(new FileReader(new File("TestCases/InputProgram.txt")));
             int line = 0;
             int errors = 0;
             boolean groupCommentFound = false;
-            lineWithError = "";
+
+            lineWithError = before = after = "";
             while ((str = br.readLine()) != null) {
-                if (line == lineTraceback.get(lineTracebackPointer - 1) - 1) {
-                    lineWithError = str;
-                    break;
-                } else {
-                    line++;
-                }
+                codeLines.add(str);
+            }
+
+            int index = lineTraceback.get(lineTracebackPointer - 1) - 1;
+            try {
+                before = codeLines.get(index - 1);
+            } catch (Exception e) {
+            }
+            lineWithError = codeLines.get(index);
+            try {
+                after = codeLines.get(index + 1);
+            } catch (Exception e) {
             }
 
             message = new StringBuilder()
-                    .append("Error occured at line " + line + 1 + ": " + lineWithError + "\n")
+                    .append("Error occured at line: " + (index + 1) + "\n")
+                    .append((!before.equals("")) ? index + "| " + before + "\n" : "")
+                    .append((index + 1) + "| " + lineWithError + "\n")
+                    .append((!after.equals("")) ? (index + 2) + "| " + after + "\n" : "")
                     .append(error)
                     .toString();
             throw new SyntaxErrorException(message);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    void exportParseTree(String parseTree) {
+        try {
+            PrintWriter writer = new PrintWriter("parsetree.txt");
+            writer.print(parseTree);
+            writer.close();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -118,7 +140,7 @@ public class SyntaxAnalyzer {
         try {
             S(ptn);
         } catch (SyntaxErrorException see) {
-            throw new SyntaxErrorException(see.getMessage());
+            throw see;
         }
 
     }
@@ -137,7 +159,7 @@ public class SyntaxAnalyzer {
                 A(curPtn);
             } // conditional
             else if (lookAhead.equals("if")) {
-                CONDITIONAL_STATEMENT(curPtn);
+                IF_STATEMENT(curPtn);
             } // repeat
             else if (lookAhead.equals("repeat")) {
                 ITERATIVE_STATEMENT(curPtn);
@@ -149,15 +171,10 @@ public class SyntaxAnalyzer {
                 curPtn.addChild("!epsilon");
                 return;
             }
-            if (lineTracebackPointer == lineTraceback.size() && lookAhead.equals("bracket_end")) {
-                match("bracket_end", curPtn);
-            } else {
-                match("terminate", curPtn);
-            } 
-            
+            match("terminate", curPtn);
             S(curPtn);
         } catch (SyntaxErrorException see) {
-            throw new SyntaxErrorException(see.getMessage());
+            throw see;
         }
 
     }
@@ -178,7 +195,7 @@ public class SyntaxAnalyzer {
                 return;
             }
         } catch (SyntaxErrorException see) {
-            throw new SyntaxErrorException(see.getMessage());
+            throw see;
         }
 
     }
@@ -202,7 +219,7 @@ public class SyntaxAnalyzer {
                 return;
             }
         } catch (SyntaxErrorException see) {
-            throw new SyntaxErrorException(see.getMessage());
+            throw see;
         }
 
     }
@@ -217,7 +234,7 @@ public class SyntaxAnalyzer {
                 ASSIGN(curPtn);
             }
         } catch (SyntaxErrorException see) {
-            throw new SyntaxErrorException(see.getMessage());
+            throw see;
         }
 
     }
@@ -234,7 +251,7 @@ public class SyntaxAnalyzer {
                 match("parenthesis_end", curPtn);
             }
         } catch (SyntaxErrorException see) {
-            throw new SyntaxErrorException(see.getMessage());
+            throw see;
         }
 
     }
@@ -252,7 +269,7 @@ public class SyntaxAnalyzer {
                 match("parenthesis_end", curPtn);
             }
         } catch (SyntaxErrorException see) {
-            throw new SyntaxErrorException(see.getMessage());
+            throw see;
         }
 
     }
@@ -260,89 +277,101 @@ public class SyntaxAnalyzer {
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="CONDITIONAL STATEMENT">
     void CONDITION(ParseTreeNode ptn) throws SyntaxErrorException {
-        ParseTreeNode curPtn = ptn.addChild("CONDITION");
-        trace("CONDITION");
+        try {
+            ParseTreeNode curPtn = ptn.addChild("CONDITION");
+            trace("CONDITION");
 
-        if (lookAhead.equals("or") || lookAhead.equals("and") || lookAhead.equals("not") || lookAhead.equals("parenthesis_start")) {
-            LOGICAL_OPERATION__(curPtn);
-        } else if (lookAhead.equals("equal_rel") || lookAhead.equals("not_equal_rel") || lookAhead.equals("lt") || lookAhead.equals("lte") || lookAhead.equals("gt") || lookAhead.equals("gte")) {
-            RELATIONAL_OPERATION(curPtn);
-        } else {
-            return;
+            if (lookAhead.equals("or") || lookAhead.equals("and") || lookAhead.equals("not") || lookAhead.equals("parenthesis_start")) {
+                LOGICAL_OPERATION__(curPtn);
+            } else if (lookAhead.equals("equal_rel") || lookAhead.equals("not_equal_rel") || lookAhead.equals("lt") || lookAhead.equals("lte") || lookAhead.equals("gt") || lookAhead.equals("gte")) {
+                RELATIONAL_OPERATION(curPtn);
+            } else {
+                return;
+            }
+        } catch (SyntaxErrorException see) {
+            throw see;
         }
-
-    }
-
-    void CONDITIONAL_STATEMENT(ParseTreeNode ptn) throws SyntaxErrorException {
-        ParseTreeNode curPtn = ptn.addChild("CONDITIONAL_STATEMENT");
-        trace("CONDITIONAL_STATEMENT");
-        CONDITIONAL_STATEMENT_(curPtn);
-        System.out.println("Conditional Statement Recognized!");
-
-    }
-
-    void CONDITIONAL_STATEMENT_(ParseTreeNode ptn) throws SyntaxErrorException {
-        ParseTreeNode curPtn = ptn.addChild("CONDITIONAL_STATEMENT_");
-        trace("CONDITIONAL_STATEMENT_");
-        IF_STATEMENT(curPtn);
-        ELSE_IF_STATEMENT_LOOP(curPtn);
-
-    }
-
-    void ELSE_STATEMENT(ParseTreeNode ptn) throws SyntaxErrorException {
-        ParseTreeNode curPtn = ptn.addChild("ELSE_STATEMENT");
-        trace("ELSE_STATEMENT");
-
-        STATEMENT_LOOP(curPtn);
     }
 
     void IF_STATEMENT(ParseTreeNode ptn) throws SyntaxErrorException {
-        ParseTreeNode curPtn = ptn.addChild("IF_STATEMENT");
-        trace("IF_STATEMENT");
-        if (lookAhead.equals("if")) {
-            match("if", curPtn);
-            match("parenthesis_start", curPtn);
-            if (lookAhead.equals("parenthesis_start")) {
-                ARITHMETIC_OPERATION(curPtn);
-            } else if (lookAhead.contains("id_")) {
-                match(lookAhead, curPtn);
-            } else if (isInt(lookAhead)) {
-                match(lookAhead, curPtn);
-            }
-            CONDITION(curPtn);
-            match("parenthesis_end", curPtn);
-            match("bracket_start", curPtn);
-            STATEMENT_LOOP(curPtn);
-
-        }
-    }
-
-    void ELSE_IF_STATEMENT_LOOP(ParseTreeNode ptn) throws SyntaxErrorException {
-        ParseTreeNode curPtn = ptn.addChild("ELSE_IF_STATEMENT_LOOP");
-        trace("ELSE_IF_STATEMENT_LOOP");
-        if (lookAhead.equals("else")) {
-            match("else", curPtn);
+        try {
+            ParseTreeNode curPtn = ptn.addChild("IF_STATEMENT");
+            trace("IF_STATEMENT");
             if (lookAhead.equals("if")) {
-                IF_STATEMENT(curPtn);
-            } else if (lookAhead.equals("bracket_start")) {
+                match("if", curPtn);
+                match("parenthesis_start", curPtn);
+                if (lookAhead.equals("parenthesis_start")) {
+                    ARITHMETIC_OPERATION(curPtn);
+                } else if (lookAhead.contains("id_")) {
+                    match(lookAhead, curPtn);
+                } else if (isInt(lookAhead)) {
+                    match(lookAhead, curPtn);
+                }
+                CONDITION(curPtn);
+                match("parenthesis_end", curPtn);
                 match("bracket_start", curPtn);
+                S(curPtn);
+                match("bracket_end", curPtn);
                 ELSE_STATEMENT(curPtn);
             }
-            ELSE_IF_STATEMENT_LOOP(curPtn);
-        } else {
-            return;
+        } catch (SyntaxErrorException see) {
+            throw see;
         }
     }
 
-    void STATEMENT_LOOP(ParseTreeNode ptn) throws SyntaxErrorException {
-        ParseTreeNode curPtn = ptn.addChild("STATEMENT_LOOP");
-        trace("STATEMENT_LOOP");
-        if (lookAhead.equals("bracket_end")) {
-            match("bracket_end", curPtn);
-        } else {
-            S(curPtn);
-            STATEMENT_LOOP(curPtn);
-        } 
+    void ELSE_STATEMENT(ParseTreeNode ptn) throws SyntaxErrorException {
+        try {
+            ParseTreeNode curPtn = ptn.addChild("ELSE_STATEMENT");
+            trace("ELSE_STATEMENT");
+            if (lookAhead.equals("else")) {
+                match("else", curPtn);
+                ELSE_STATEMENT_(curPtn);
+            } else {
+                return;
+            }
+        } catch (SyntaxErrorException see) {
+            throw see;
+        }
+    }
+
+    void ELSE_STATEMENT_(ParseTreeNode ptn) throws SyntaxErrorException {
+        try {
+            ParseTreeNode curPtn = ptn.addChild("ELSE_STATEMENT_");
+            trace("ELSE_STATEMENT_");
+            if (lookAhead.equals("if")) {
+                match("if", curPtn);
+                match("parenthesis_start", curPtn);
+                if (lookAhead.equals("parenthesis_start")) {
+                    ARITHMETIC_OPERATION(curPtn);
+                } else if (lookAhead.contains("id_")) {
+                    match(lookAhead, curPtn);
+                } else if (isInt(lookAhead)) {
+                    match(lookAhead, curPtn);
+                }
+                CONDITION(curPtn);
+                match("parenthesis_end", curPtn);
+                match("bracket_start", curPtn);
+                S(curPtn);
+                match("bracket_end", curPtn);
+            } else {
+                match("parenthesis_start", curPtn);
+                if (lookAhead.equals("parenthesis_start")) {
+                    ARITHMETIC_OPERATION(curPtn);
+                } else if (lookAhead.contains("id_")) {
+                    match(lookAhead, curPtn);
+                } else if (isInt(lookAhead)) {
+                    match(lookAhead, curPtn);
+                }
+                CONDITION(curPtn);
+                match("parenthesis_end", curPtn);
+                match("bracket_start", curPtn);
+                S(curPtn);
+                match("bracket_end", curPtn);
+            }
+            ELSE_STATEMENT(curPtn);
+        } catch (SyntaxErrorException see) {
+            throw see;
+        }
     }
 
     // </editor-fold>
@@ -354,7 +383,7 @@ public class SyntaxAnalyzer {
         ITERATIVE_STATEMENT_(curPtn);
         System.out.println("Conditional Statement Recognized!");
     }
-    
+
     void ITERATIVE_STATEMENT_(ParseTreeNode ptn) throws SyntaxErrorException {
         ParseTreeNode curPtn = ptn.addChild("ITERATIVE_STATEMENT_");
         trace("ITERATIVE_STATEMENT_");
@@ -369,9 +398,9 @@ public class SyntaxAnalyzer {
                 match(lookAhead, curPtn);
             }
             CONDITION(curPtn);
-            if (lookAhead.equals("comma"))  {
+            if (lookAhead.equals("comma")) {
                 match("comma", curPtn);
-                if (lookAhead.contains("id_"))  {
+                if (lookAhead.contains("id_")) {
                     match(lookAhead, curPtn);
                     if (lookAhead.equals("increment_op") || lookAhead.equals("decrement_op")) {
                         OPTIONAL_OPERATOR(curPtn);
@@ -380,10 +409,11 @@ public class SyntaxAnalyzer {
             }
             match("parenthesis_end", curPtn);
             match("bracket_start", curPtn);
-            STATEMENT_LOOP(curPtn);
+            S(curPtn);
+            match("bracket_end", curPtn);
         }
     }
-    
+
     // </editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Arithmetic Operation">
     void ARITHMETIC_OPERATION(ParseTreeNode ptn) throws SyntaxErrorException {
@@ -393,7 +423,7 @@ public class SyntaxAnalyzer {
             ARITHMETIC_TERM(curPtn);
             ARITHMETIC_OPERATION_(curPtn);
         } catch (SyntaxErrorException see) {
-            throw new SyntaxErrorException(see.getMessage());
+            throw see;
         }
 
     }
@@ -406,13 +436,13 @@ public class SyntaxAnalyzer {
             if (lookAhead.equals("add_op")) {
                 match("add_op", curPtn);
                 if (!(lookAhead.contains("id_") || isInt(lookAhead) || lookAhead.contains("parenthesis_start"))) {
-                    handleError("Expected: num_lit/identifier/parenthesis_start\nBut got: " + lookAhead);
+                    handleError("Expected: num_lit/identifier/parenthesis_start\nGot: " + lookAhead);
                 }
                 ARITHMETIC_TERM(curPtn);
             } else if (lookAhead.equals("sub_op")) {
                 match("sub_op", curPtn);
                 if (!(lookAhead.contains("id_") || isInt(lookAhead) || lookAhead.contains("parenthesis_start"))) {
-                    handleError("Expected: num_lit/identifier/parenthesis_start\nBut got: " + lookAhead);
+                    handleError("Expected: num_lit/identifier/parenthesis_start\nGot: " + lookAhead);
                 }
                 ARITHMETIC_TERM(curPtn);
             } else {
@@ -421,7 +451,7 @@ public class SyntaxAnalyzer {
             }
             ARITHMETIC_OPERATION_(curPtn);
         } catch (SyntaxErrorException see) {
-            throw new SyntaxErrorException(see.getMessage());
+            throw see;
         }
 
     }
@@ -433,7 +463,7 @@ public class SyntaxAnalyzer {
             ARITHMETIC_FACTOR(curPtn);
             ARITHMETIC_TERM_(curPtn);
         } catch (SyntaxErrorException see) {
-            throw new SyntaxErrorException(see.getMessage());
+            throw see;
         }
 
     }
@@ -445,19 +475,19 @@ public class SyntaxAnalyzer {
             if (lookAhead.equals("mult_op")) {
                 match("mult_op", curPtn);
                 if (!(lookAhead.contains("id_") || isInt(lookAhead) || lookAhead.contains("parenthesis_start"))) {
-                    handleError("Expected: num_lit/identifier/parenthesis_start\nBut got: " + lookAhead);
+                    handleError("Expected: num_lit/identifier/parenthesis_start\nGot: " + lookAhead);
                 }
                 ARITHMETIC_FACTOR(curPtn);
             } else if (lookAhead.equals("div_op")) {
                 match("div_op", curPtn);
                 if (!(lookAhead.contains("id_") || isInt(lookAhead) || lookAhead.contains("parenthesis_start"))) {
-                    handleError("Expected: num_lit/identifier/parenthesis_start\nBut got: " + lookAhead);
+                    handleError("Expected: num_lit/identifier/parenthesis_start\nGot: " + lookAhead);
                 }
                 ARITHMETIC_FACTOR(curPtn);
             } else if (lookAhead.equals("modulo_op")) {
                 match("modulo_op", curPtn);
                 if (!(lookAhead.contains("id_") || isInt(lookAhead) || lookAhead.contains("parenthesis_start"))) {
-                    handleError("Expected: num_lit/identifier/parenthesis_start\nBut got: " + lookAhead);
+                    handleError("Expected: num_lit/identifier/parenthesis_start\nGot: " + lookAhead);
                 }
                 ARITHMETIC_FACTOR(curPtn);
             } else {
@@ -466,7 +496,7 @@ public class SyntaxAnalyzer {
             }
             ARITHMETIC_TERM_(curPtn);
         } catch (SyntaxErrorException see) {
-            throw new SyntaxErrorException(see.getMessage());
+            throw see;
         }
 
     }
@@ -491,7 +521,7 @@ public class SyntaxAnalyzer {
                 handleError("Invalid Empty Parenthesis");
             }
         } catch (SyntaxErrorException see) {
-            throw new SyntaxErrorException(see.getMessage());
+            throw see;
         }
 
     }
@@ -502,7 +532,7 @@ public class SyntaxAnalyzer {
             trace("OPTIONAL_OPERATOR");
             match(lookAhead, curPtn);
         } catch (SyntaxErrorException see) {
-            throw new SyntaxErrorException(see.getMessage());
+            throw see;
         }
 
     }
@@ -510,131 +540,162 @@ public class SyntaxAnalyzer {
 
     //<editor-fold defaultstate="collapsed" desc="Logical Operation">
     void LOGICAL_OPERATION(ParseTreeNode ptn) throws SyntaxErrorException {
-        ParseTreeNode curPtn = ptn.addChild("LOGICAL_OPERATION");
-        trace("LO"); // pang track lang kung nasaang function
-        LOGICAL_TERM(curPtn); // kapag non-terminal
-        LOGICAL_OPERATION_(curPtn);
-        System.out.println("Logical operation recognized!");
-
+        try {
+            ParseTreeNode curPtn = ptn.addChild("LOGICAL_OPERATION");
+            trace("LO"); // pang track lang kung nasaang function
+            LOGICAL_TERM(curPtn); // kapag non-terminal
+            LOGICAL_OPERATION_(curPtn);
+        } catch (SyntaxErrorException see) {
+            throw see;
+        }
     }
 
     void LOGICAL_OPERATION_(ParseTreeNode ptn) throws SyntaxErrorException {
-        ParseTreeNode curPtn = ptn.addChild("LOGICAL_OPERATION");
-        trace("LO_");
-        if (lookAhead.equals("or")) {
-            match("or", curPtn);
-        } else {
-            curPtn.addChild("!epsilon");
-            return;
-        }
+        try {
+            ParseTreeNode curPtn = ptn.addChild("LOGICAL_OPERATION");
+            trace("LO_");
+            if (lookAhead.equals("or")) {
+                match("or", curPtn);
+            } else {
+                curPtn.addChild("!epsilon");
+                return;
+            }
 
-        LOGICAL_TERM(curPtn);
-        LOGICAL_OPERATION_(curPtn);
-    }
-    
-    void LOGICAL_OPERATION__(ParseTreeNode ptn) throws SyntaxErrorException {
-        ParseTreeNode curPtn = ptn.addChild("LOGICAL_OPERATION");
-        trace("LO_");
-        if (lookAhead.equals("or")) {
-            match("or", curPtn);
             LOGICAL_TERM(curPtn);
-        } else {
-            match("and", curPtn);
-            LOGICAL_FACTOR(curPtn);
+            LOGICAL_OPERATION_(curPtn);
+        } catch (SyntaxErrorException see) {
+            throw see;
         }
+    }
 
-        
-        LOGICAL_OPERATION_(curPtn);
+    void LOGICAL_OPERATION__(ParseTreeNode ptn) throws SyntaxErrorException {
+        try {
+            ParseTreeNode curPtn = ptn.addChild("LOGICAL_OPERATION");
+            trace("LO_");
+            if (lookAhead.equals("or")) {
+                match("or", curPtn);
+                LOGICAL_TERM(curPtn);
+            } else {
+                match("and", curPtn);
+                LOGICAL_FACTOR(curPtn);
+            }
+
+            LOGICAL_OPERATION_(curPtn);
+        } catch (SyntaxErrorException see) {
+            throw see;
+        }
     }
 
     void LOGICAL_TERM(ParseTreeNode ptn) throws SyntaxErrorException {
-        ParseTreeNode curPtn = ptn.addChild("LOGICAL_OPERATION");
-        trace("LT");
-        LOGICAL_FACTOR(curPtn);
-        LOGICAL_TERM_(curPtn);
+        try {
+            ParseTreeNode curPtn = ptn.addChild("LOGICAL_OPERATION");
+            trace("LT");
+            LOGICAL_FACTOR(curPtn);
+            LOGICAL_TERM_(curPtn);
+        } catch (SyntaxErrorException see) {
+            throw see;
+        }
     }
-    
+
     void LOGICAL_TERM_(ParseTreeNode ptn) throws SyntaxErrorException {
-        ParseTreeNode curPtn = ptn.addChild("LOGICAL_OPERATION");
-        trace("LT_");
-        if (lookAhead.equals("and")) {
-            match("and", curPtn);
-        } else {
-            return;
-        }
+        try {
+            ParseTreeNode curPtn = ptn.addChild("LOGICAL_OPERATION");
+            trace("LT_");
+            if (lookAhead.equals("and")) {
+                match("and", curPtn);
+            } else {
+                return;
+            }
 
-        LOGICAL_FACTOR(curPtn);
-        LOGICAL_TERM_(curPtn);
+            LOGICAL_FACTOR(curPtn);
+            LOGICAL_TERM_(curPtn);
+        } catch (SyntaxErrorException see) {
+            throw see;
+        }
     }
-    
+
     void LOGICAL_FACTOR(ParseTreeNode ptn) throws SyntaxErrorException {
-        ParseTreeNode curPtn = ptn.addChild("LOGICAL_OPERATION");
-        trace("LF");
-        if (lookAhead.equals("not")) {
-            match("not", curPtn);
+        try {
+            ParseTreeNode curPtn = ptn.addChild("LOGICAL_OPERATION");
+            trace("LF");
+            if (lookAhead.equals("not")) {
+                match("not", curPtn);
+            }
+            LOGICAL_FACTOR_(curPtn);
+        } catch (SyntaxErrorException see) {
+            throw see;
         }
-        LOGICAL_FACTOR_(curPtn);
-
     }
-    
 
     void LOGICAL_FACTOR_(ParseTreeNode ptn) throws SyntaxErrorException {
-        ParseTreeNode curPtn = ptn.addChild("LOGICAL_OPERATION");
-        trace("LF_");
-        if (lookAhead.equals("parenthesis_start")) {
-            match("parenthesis_start", curPtn);
-            LOGICAL_OPERATION(curPtn);
-            if (lookAhead.equals("parenthesis_end")) {
-                match("parenthesis_end", curPtn);
+        try {
+            ParseTreeNode curPtn = ptn.addChild("LOGICAL_OPERATION");
+            trace("LF_");
+            if (lookAhead.equals("parenthesis_start")) {
+                match("parenthesis_start", curPtn);
+                LOGICAL_OPERATION(curPtn);
+                if (lookAhead.equals("parenthesis_end")) {
+                    match("parenthesis_end", curPtn);
+                }
+            } else if (lookAhead.contains("id_")) {
+                match(lookAhead, curPtn);
+            } else if (lookAhead.equals("true_bool")) {
+                match("true_bool", curPtn);
+            } else if (lookAhead.equals("false_bool")) {
+                match("false_bool", curPtn);
+            } else {
+                RELATIONAL_OPERATION(curPtn);
             }
-        } else if (lookAhead.contains("id_")) {
-            match(lookAhead, curPtn);
-        } else if (lookAhead.equals("true_bool")) {
-            match("true_bool", curPtn);
-        } else if (lookAhead.equals("false_bool")) {
-            match("false_bool", curPtn);
-        } else {
-            RELATIONAL_OPERATION(curPtn);
+        } catch (SyntaxErrorException see) {
+            throw see;
         }
     }
 
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Relational Operation">
     void RELATIONAL_OPERATION(ParseTreeNode ptn) throws SyntaxErrorException {
-        ParseTreeNode curPtn = ptn.addChild("RELATIONAL_OPERATION");
-        trace("RELATIONAL_OPERATION");
-        RELATIONAL_OPERATORS(curPtn);
-        if (lookAhead.equals("parenthesis_start")) {
-            ARITHMETIC_OPERATION(curPtn);
-        } else if (lookAhead.contains("id_")) {
-            match(lookAhead, curPtn);
-        } else if (isInt(lookAhead)) {
-            match(lookAhead, curPtn);
+        try {
+            ParseTreeNode curPtn = ptn.addChild("RELATIONAL_OPERATION");
+            trace("RELATIONAL_OPERATION");
+            RELATIONAL_OPERATORS(curPtn);
+            if (lookAhead.equals("parenthesis_start")) {
+                ARITHMETIC_OPERATION(curPtn);
+            } else if (lookAhead.contains("id_")) {
+                match(lookAhead, curPtn);
+            } else if (isInt(lookAhead)) {
+                match(lookAhead, curPtn);
+            }
+            System.out.println("Relational operation recognized!");
+        } catch (SyntaxErrorException see) {
+            throw see;
         }
-        System.out.println("Relational operation recognized!");
     }
 
     void RELATIONAL_OPERATORS(ParseTreeNode ptn) throws SyntaxErrorException {
-        ParseTreeNode curPtn = ptn.addChild("RELATIONAL_OPERATORS");
-        trace("RELATIONAL_OPERATORS");
-        if (lookAhead.equals("equal_rel")) {
-            match(lookAhead, curPtn);
-        } else if (lookAhead.equals("not_equal_rel")) {
-            match(lookAhead, curPtn);
+        try {
+            ParseTreeNode curPtn = ptn.addChild("RELATIONAL_OPERATORS");
+            trace("RELATIONAL_OPERATORS");
+            if (lookAhead.equals("equal_rel")) {
+                match(lookAhead, curPtn);
+            } else if (lookAhead.equals("not_equal_rel")) {
+                match(lookAhead, curPtn);
+            }
+            if (lookAhead.equals("lt")) {
+                match(lookAhead, curPtn);
+            }
+            if (lookAhead.equals("lte")) {
+                match(lookAhead, curPtn);
+            }
+            if (lookAhead.equals("gt")) {
+                match(lookAhead, curPtn);
+            }
+            if (lookAhead.equals("gte")) {
+                match(lookAhead, curPtn);
+            }
+            ARITHMETIC_OPERATION(curPtn);
+        } catch (SyntaxErrorException see) {
+            throw see;
         }
-        if (lookAhead.equals("lt")) {
-            match(lookAhead, curPtn);
-        }
-        if (lookAhead.equals("lte")) {
-            match(lookAhead, curPtn);
-        }
-        if (lookAhead.equals("gt")) {
-            match(lookAhead, curPtn);
-        }
-        if (lookAhead.equals("gte")) {
-            match(lookAhead, curPtn);
-        }
-        ARITHMETIC_OPERATION(curPtn);
     }
 
     //</editor-fold>
@@ -651,7 +712,7 @@ public class SyntaxAnalyzer {
                 match("bool", curPtn);
             }
         } catch (SyntaxErrorException see) {
-            throw new SyntaxErrorException(see.getMessage());
+            throw see;
 
         }
 
