@@ -1,8 +1,3 @@
-If (x > 5) {
-    Int i = x * 3;
-} Else If (x And y) {
-    Word str = "hello world!";
-} Else {
-    Int x = 5 + 7;
-    Int x = 5 + 6;
+Repeat (x > 5, i++)  {
+    Roar("labyu jared");
 }

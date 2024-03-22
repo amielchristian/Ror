@@ -1,44 +1,18 @@
 
-int
-id_y
-assign_op
+repeat
 parenthesis_start
 id_x
-modulo_op
-2
-parenthesis_end
-terminate
-int
-id_x
-assign_op
-nom
-parenthesis_start
-parenthesis_end
-terminate
-id_x
-assign_op
-id_x
-add_op
-id_y
-mult_op
-parenthesis_start
-3
-div_op
-parenthesis_start
+gt
 5
-add_op
-id_z
+comma
+id_i
+increment_op
 parenthesis_end
-parenthesis_end
-terminate
+bracket_start
 roar
 parenthesis_start
-"hello world!"
+"labyu jared"
 parenthesis_end
 terminate
-int
-id_a
-assign_op
-10
-terminate
+bracket_end
 Total errors: 0

@@ -140,7 +140,7 @@ public class SyntaxAnalyzer {
                 CONDITIONAL_STATEMENT(curPtn);
             } // repeat
             else if (lookAhead.equals("repeat")) {
-                // R();
+                ITERATIVE_STATEMENT(curPtn);
             } else if (lookAhead.equals("roar")) {
                 ROAR(curPtn);
             } else if (lookAhead.equals("nom")) {
@@ -342,9 +342,48 @@ public class SyntaxAnalyzer {
         } else {
             S(curPtn);
             STATEMENT_LOOP(curPtn);
-        }
+        } 
     }
 
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="ITERATIVE STATEMENT">
+    // 
+    void ITERATIVE_STATEMENT(ParseTreeNode ptn) throws SyntaxErrorException {
+        ParseTreeNode curPtn = ptn.addChild("ITERATIVE_STATEMENT");
+        trace("ITERATIVE_STATEMENT");
+        ITERATIVE_STATEMENT_(curPtn);
+        System.out.println("Conditional Statement Recognized!");
+    }
+    
+    void ITERATIVE_STATEMENT_(ParseTreeNode ptn) throws SyntaxErrorException {
+        ParseTreeNode curPtn = ptn.addChild("ITERATIVE_STATEMENT_");
+        trace("ITERATIVE_STATEMENT_");
+        if (lookAhead.equals("repeat")) {
+            match("repeat", curPtn);
+            match("parenthesis_start", curPtn);
+            if (lookAhead.equals("parenthesis_start")) {
+                ARITHMETIC_OPERATION(curPtn);
+            } else if (lookAhead.contains("id_")) {
+                match(lookAhead, curPtn);
+            } else if (isInt(lookAhead)) {
+                match(lookAhead, curPtn);
+            }
+            CONDITION(curPtn);
+            if (lookAhead.equals("comma"))  {
+                match("comma", curPtn);
+                if (lookAhead.contains("id_"))  {
+                    match(lookAhead, curPtn);
+                    if (lookAhead.equals("increment_op") || lookAhead.equals("decrement_op")) {
+                        OPTIONAL_OPERATOR(curPtn);
+                    }
+                }
+            }
+            match("parenthesis_end", curPtn);
+            match("bracket_start", curPtn);
+            STATEMENT_LOOP(curPtn);
+        }
+    }
+    
     // </editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Arithmetic Operation">
     void ARITHMETIC_OPERATION(ParseTreeNode ptn) throws SyntaxErrorException {
