@@ -51,6 +51,10 @@ public class ParseTreeNode {
     public void setLevel(int level) {
         this.level = level;
     }
+    
+    public ArrayList<ParseTreeNode> getChildren() {
+        return children;
+    }
 
     @Override
     public String toString() {

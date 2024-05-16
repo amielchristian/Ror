@@ -5,8 +5,8 @@
 package rorlanguage;
 
 import modules.LexResult;
-import java.util.ArrayList;
 import modules.DFALex;
+import modules.ParseTreeNode;
 import modules.SymbolTable;
 
 /**
@@ -22,5 +22,8 @@ public class RorLanguage {
         LexResult lr = la.runTestProgram(dfa, st);
         SyntaxAnalyzer sa = new SyntaxAnalyzer(lr);
         sa.parse();
+        System.out.println(st);
+        ParseTreeNode ptn = sa.getParseTree();
+        Interpreter intptr = new Interpreter(ptn, st);
     }
 }

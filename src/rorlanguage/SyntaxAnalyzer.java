@@ -39,8 +39,9 @@ public class SyntaxAnalyzer {
         try {
             ptn = new ParseTreeNode("<P>");
             P(ptn);
-            System.out.println(ptn);
+//            System.out.println(ptn);
             exportParseTree(ptn.toString());
+            
         } catch (SyntaxErrorException see) {
             see.printStackTrace();
             return false;
@@ -52,13 +53,17 @@ public class SyntaxAnalyzer {
             return false;
         }
     }
+    
+    ParseTreeNode getParseTree() {
+        return ptn;
+    }
 
     void trace(String location) {
-        System.out.println(location + ": " + lookAhead);
+//        System.out.println(location + ": " + lookAhead);
     }
 
     boolean match(String token, ParseTreeNode ptn) throws SyntaxErrorException {
-//        System.out.println("MATCHING: " + token + " WITH lookAhead: " + lookAhead);
+        System.out.println("MATCHING: " + token + " WITH lookAhead: " + lookAhead);
         if (lookAhead.equals(token) && !tokenQueue.isEmpty()) {
             ptn.addNonTermChild(token);
             lookAhead = tokenQueue.poll();
@@ -263,7 +268,7 @@ public class SyntaxAnalyzer {
             if (lookAhead.equals("roar")) {
                 match("roar", curPtn);
                 match("parenthesis_start", curPtn);
-                if (lookAhead.contains("\"")) {
+                if (lookAhead.contains("\"") || lookAhead.startsWith("id")) {
                     match(lookAhead, curPtn);
                 }
                 match("parenthesis_end", curPtn);
@@ -439,8 +444,8 @@ public class SyntaxAnalyzer {
                     handleError("Expected: num_lit/identifier/parenthesis_start\nGot: " + lookAhead);
                 }
                 ARITHMETIC_TERM(curPtn);
-            } else if (lookAhead.equals("sub_op")) {
-                match("sub_op", curPtn);
+            } else if (lookAhead.equals("minus_op")) {
+                match("minus_op", curPtn);
                 if (!(lookAhead.contains("id_") || isInt(lookAhead) || lookAhead.contains("parenthesis_start"))) {
                     handleError("Expected: num_lit/identifier/parenthesis_start\nGot: " + lookAhead);
                 }

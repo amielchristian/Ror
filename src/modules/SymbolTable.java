@@ -31,8 +31,17 @@ public class SymbolTable {
         //map.get(token).put("datatype", TODO); for next phase hehe
         //map.get(token).put("value", TODO);     "   "     "    "
     }
+    
+    public void setTokenDatatype(String token, String datatype) {
+        map.get(token).put("datatype", datatype);
+    }
+    
     public void updateTokenValue(String token, Object newValue) {
         map.get(token).put("value", newValue);
+    }
+    
+    public Object getTokenValue(String token, String key) {
+        return map.get(token).get(key);
     }
     
     @Override

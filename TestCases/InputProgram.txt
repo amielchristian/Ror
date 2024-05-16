@@ -1,17 +1,5 @@
-Roar("labyu jared");
-
-
-
-Repeat (x > 5, i++)  {
-    Roar("ayoko na");
-    If (x > 5) {
-        If ((x + 5) >= (7 * 8 / (7 % index))) {
-            Int i = x * 3;
-        } Else If (x And y) {
-            Word str = "hello world!";
-        } Else If (y Or z And index) {
-            Int x = x++;
-            Int x = 5 + 6;
-        };
-    };
-};
+Int x = Nom();
+Roar("ayoko na");
+Roar(x);
+x = 20;
+Roar(x);
