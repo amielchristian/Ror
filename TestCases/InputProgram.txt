@@ -1,5 +1,6 @@
 Int x = Nom();
-Roar("ayoko na");
-Roar(x);
-x = 20;
+Int y = Nom();
+Int z = Nom();
+Roar(z);
+Roar(y);
 Roar(x);

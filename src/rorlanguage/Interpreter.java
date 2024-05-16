@@ -5,6 +5,7 @@
 package rorlanguage;
 
 import java.util.ArrayList;
+import java.util.Scanner;
 import modules.ParseTreeNode;
 import modules.SymbolTable;
 
@@ -27,10 +28,11 @@ public class Interpreter {
 
     private void traverse(ParseTreeNode ptn) {
         if (ptn == null) {
-            tokens.add(ptn.name);
+            return;
         }
+
         if (!ptn.name.equals("<S>")) {
-            System.out.println(ptn.name);
+            tokens.add(ptn.name);
         }
         for (ParseTreeNode child : ptn.getChildren()) {
             traverse(child);
@@ -38,25 +40,60 @@ public class Interpreter {
     }
 
     public void run() {
-        while (true) {
-            if (tokens.get(ptr).equals("<P>")) {
-                ptr++;
-            } else if (tokens.get(ptr++).equals("<D>")) {
+        System.out.println("INTERPRETER -------------------------------");
+        while (ptr < tokens.size() - 1) {
+            if (match("<P>")) {
+            } else if (match("<D>")) {
                 declare();
+            } else if (match("<ROAR>")) {
+                roar();
             }
         }
     }
-    
+
     private void declare() {
         // TODO: Check if declared in symbol table
-        ptr++;
+        match("<DT>");
         String datatype = tokens.get(ptr++);
         String identifier = tokens.get(ptr++);
         ptr++;
         Object value = null;
-        if (tokens.get(ptr++).equals("<NOM>")) {
-            
+        ptr++;
+        if (match("<NOM>")) {
+            value = nom();
+        } else if (match("<ARITHMETIC_OPERATION>")) {
+            // TODO
+            ptr++;
+            value = 69;
         }
-//        st.updateTokenValue(tokens.get(ptr), "datatype", datatype);
+        st.setTokenDatatype(identifier, datatype);
+        st.updateTokenValue(identifier, value);
+        ptr++;
+    }
+
+    private String nom() {
+        ptr += 3;
+        Scanner sc = new Scanner(System.in);
+        return sc.nextLine();
+    }
+
+    private void roar() {
+        ptr += 2;
+        if (tokens.get(ptr).startsWith("id_")) {
+            System.out.println(st.getTokenValue(tokens.get(ptr), "value"));
+            ptr++;
+        }
+//        System.out.println(tokens.get(ptr));
+        ptr += 2;
+    }
+
+    boolean match(String token) {
+        if (tokens.get(ptr).equals(token)) {
+//            System.out.println("MATCHING: " + token + " WITH: " + tokens.get(ptr));
+            ptr++;
+            return true;
+        } else {
+            return false;
+        }
     }
 }

@@ -12,39 +12,49 @@
        |                 |--- parenthesis_end
        |--- terminate
        |--- <S>
-             |--- <ROAR>
-             |     |--- roar
-             |     |--- parenthesis_start
-             |     |--- "ayoko na"
-             |     |--- parenthesis_end
+             |--- <D>
+             |     |--- <DT>
+             |     |     |--- int
+             |     |--- id_y
+             |     |--- assign_op
+             |     |--- <ASSIGN>
+             |           |--- <NOM>
+             |                 |--- nom
+             |                 |--- parenthesis_start
+             |                 |--- parenthesis_end
              |--- terminate
              |--- <S>
-                   |--- <ROAR>
-                   |     |--- roar
-                   |     |--- parenthesis_start
-                   |     |--- id_x
-                   |     |--- parenthesis_end
+                   |--- <D>
+                   |     |--- <DT>
+                   |     |     |--- int
+                   |     |--- id_z
+                   |     |--- assign_op
+                   |     |--- <ASSIGN>
+                   |           |--- <NOM>
+                   |                 |--- nom
+                   |                 |--- parenthesis_start
+                   |                 |--- parenthesis_end
                    |--- terminate
                    |--- <S>
-                         |--- <A>
-                         |     |--- id_x
-                         |     |--- assign_op
-                         |     |--- <ASSIGN>
-                         |           |--- <ARITHMETIC_OPERATION>
-                         |                 |--- <ARITHMETIC_TERM>
-                         |                 |     |--- <ARITHMETIC_FACTOR>
-                         |                 |     |     |--- 20
-                         |                 |     |--- <ARITHMETIC_TERM_>
-                         |                 |           |--- <!epsilon>
-                         |                 |--- <ARITHMETIC_OPERATION_>
-                         |                       |--- <!epsilon>
+                         |--- <ROAR>
+                         |     |--- roar
+                         |     |--- parenthesis_start
+                         |     |--- id_z
+                         |     |--- parenthesis_end
                          |--- terminate
                          |--- <S>
                                |--- <ROAR>
                                |     |--- roar
                                |     |--- parenthesis_start
-                               |     |--- id_x
+                               |     |--- id_y
                                |     |--- parenthesis_end
-                               |--- <terminate>
+                               |--- terminate
                                |--- <S>
-                                     |--- <!epsilon>
+                                     |--- <ROAR>
+                                     |     |--- roar
+                                     |     |--- parenthesis_start
+                                     |     |--- id_x
+                                     |     |--- parenthesis_end
+                                     |--- <terminate>
+                                     |--- <S>
+                                           |--- <!epsilon>
