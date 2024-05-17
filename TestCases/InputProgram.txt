@@ -4,6 +4,8 @@ Int z = 100 * y;
 Word a = "hello!";
 a = "pakyu";
 
-If (10 > 5) {
+If (x >= 4) {
+    Int b = x;
     Roar(a);
+    Roar(b);
 };

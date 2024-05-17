@@ -13,71 +13,7 @@
        |                 |     |--- <ARITHMETIC_TERM_>
        |                 |           |--- <!epsilon>
        |                 |--- <ARITHMETIC_OPERATION_>
-       |                       |--- add_op
-       |                       |--- <ARITHMETIC_TERM>
-       |                       |     |--- <ARITHMETIC_FACTOR>
-       |                       |     |     |--- 3
-       |                       |     |--- <ARITHMETIC_TERM_>
-       |                       |           |--- mult_op
-       |                       |           |--- <ARITHMETIC_FACTOR>
-       |                       |           |     |--- parenthesis_start
-       |                       |           |     |--- <ARITHMETIC_OPERATION>
-       |                       |           |     |     |--- <ARITHMETIC_TERM>
-       |                       |           |     |     |     |--- <ARITHMETIC_FACTOR>
-       |                       |           |     |     |     |     |--- 5
-       |                       |           |     |     |     |--- <ARITHMETIC_TERM_>
-       |                       |           |     |     |           |--- mult_op
-       |                       |           |     |     |           |--- <ARITHMETIC_FACTOR>
-       |                       |           |     |     |           |     |--- parenthesis_start
-       |                       |           |     |     |           |     |--- <ARITHMETIC_OPERATION>
-       |                       |           |     |     |           |     |     |--- <ARITHMETIC_TERM>
-       |                       |           |     |     |           |     |     |     |--- <ARITHMETIC_FACTOR>
-       |                       |           |     |     |           |     |     |     |     |--- 6
-       |                       |           |     |     |           |     |     |     |--- <ARITHMETIC_TERM_>
-       |                       |           |     |     |           |     |     |           |--- <!epsilon>
-       |                       |           |     |     |           |     |     |--- <ARITHMETIC_OPERATION_>
-       |                       |           |     |     |           |     |           |--- add_op
-       |                       |           |     |     |           |     |           |--- <ARITHMETIC_TERM>
-       |                       |           |     |     |           |     |           |     |--- <ARITHMETIC_FACTOR>
-       |                       |           |     |     |           |     |           |     |     |--- 5
-       |                       |           |     |     |           |     |           |     |--- <ARITHMETIC_TERM_>
-       |                       |           |     |     |           |     |           |           |--- <!epsilon>
-       |                       |           |     |     |           |     |           |--- <ARITHMETIC_OPERATION_>
-       |                       |           |     |     |           |     |                 |--- <!epsilon>
-       |                       |           |     |     |           |     |--- parenthesis_end
-       |                       |           |     |     |           |--- <ARITHMETIC_TERM_>
-       |                       |           |     |     |                 |--- <!epsilon>
-       |                       |           |     |     |--- <ARITHMETIC_OPERATION_>
-       |                       |           |     |           |--- <!epsilon>
-       |                       |           |     |--- parenthesis_end
-       |                       |           |--- <ARITHMETIC_TERM_>
-       |                       |                 |--- div_op
-       |                       |                 |--- <ARITHMETIC_FACTOR>
-       |                       |                 |     |--- 3
-       |                       |                 |--- <ARITHMETIC_TERM_>
-       |                       |                       |--- mult_op
-       |                       |                       |--- <ARITHMETIC_FACTOR>
-       |                       |                       |     |--- parenthesis_start
-       |                       |                       |     |--- <ARITHMETIC_OPERATION>
-       |                       |                       |     |     |--- <ARITHMETIC_TERM>
-       |                       |                       |     |     |     |--- <ARITHMETIC_FACTOR>
-       |                       |                       |     |     |     |     |--- 2
-       |                       |                       |     |     |     |--- <ARITHMETIC_TERM_>
-       |                       |                       |     |     |           |--- <!epsilon>
-       |                       |                       |     |     |--- <ARITHMETIC_OPERATION_>
-       |                       |                       |     |           |--- add_op
-       |                       |                       |     |           |--- <ARITHMETIC_TERM>
-       |                       |                       |     |           |     |--- <ARITHMETIC_FACTOR>
-       |                       |                       |     |           |     |     |--- 4
-       |                       |                       |     |           |     |--- <ARITHMETIC_TERM_>
-       |                       |                       |     |           |           |--- <!epsilon>
-       |                       |                       |     |           |--- <ARITHMETIC_OPERATION_>
-       |                       |                       |     |                 |--- <!epsilon>
-       |                       |                       |     |--- parenthesis_end
-       |                       |                       |--- <ARITHMETIC_TERM_>
-       |                       |                             |--- <!epsilon>
-       |                       |--- <ARITHMETIC_OPERATION_>
-       |                             |--- <!epsilon>
+       |                       |--- <!epsilon>
        |--- terminate
        |--- <S>
              |--- <D>
@@ -93,7 +29,14 @@
              |                 |     |--- <ARITHMETIC_TERM_>
              |                 |           |--- <!epsilon>
              |                 |--- <ARITHMETIC_OPERATION_>
-             |                       |--- <!epsilon>
+             |                       |--- minus_op
+             |                       |--- <ARITHMETIC_TERM>
+             |                       |     |--- <ARITHMETIC_FACTOR>
+             |                       |     |     |--- 35
+             |                       |     |--- <ARITHMETIC_TERM_>
+             |                       |           |--- <!epsilon>
+             |                       |--- <ARITHMETIC_OPERATION_>
+             |                             |--- <!epsilon>
              |--- terminate
              |--- <S>
                    |--- <D>
@@ -116,25 +59,74 @@
                    |                       |--- <!epsilon>
                    |--- terminate
                    |--- <S>
-                         |--- <ROAR>
-                         |     |--- roar
-                         |     |--- parenthesis_start
-                         |     |--- id_x
-                         |     |--- parenthesis_end
+                         |--- <D>
+                         |     |--- <DT>
+                         |     |     |--- word
+                         |     |--- id_a
+                         |     |--- assign_op
+                         |     |--- <ASSIGN>
+                         |           |--- "hello!"
                          |--- terminate
                          |--- <S>
-                               |--- <ROAR>
-                               |     |--- roar
-                               |     |--- parenthesis_start
-                               |     |--- id_y
-                               |     |--- parenthesis_end
+                               |--- <A>
+                               |     |--- id_a
+                               |     |--- assign_op
+                               |     |--- <ASSIGN>
+                               |           |--- "pakyu"
                                |--- terminate
                                |--- <S>
-                                     |--- <ROAR>
-                                     |     |--- roar
+                                     |--- <IF_STATEMENT>
+                                     |     |--- if
                                      |     |--- parenthesis_start
-                                     |     |--- id_z
+                                     |     |--- id_x
+                                     |     |--- <CONDITION>
+                                     |     |     |--- <RELATIONAL_OPERATION>
+                                     |     |           |--- <RELATIONAL_OPERATORS>
+                                     |     |                 |--- gte
+                                     |     |                 |--- <ARITHMETIC_OPERATION>
+                                     |     |                       |--- <ARITHMETIC_TERM>
+                                     |     |                       |     |--- <ARITHMETIC_FACTOR>
+                                     |     |                       |     |     |--- 4
+                                     |     |                       |     |--- <ARITHMETIC_TERM_>
+                                     |     |                       |           |--- <!epsilon>
+                                     |     |                       |--- <ARITHMETIC_OPERATION_>
+                                     |     |                             |--- <!epsilon>
                                      |     |--- parenthesis_end
+                                     |     |--- bracket_start
+                                     |     |--- <S>
+                                     |     |     |--- <D>
+                                     |     |     |     |--- <DT>
+                                     |     |     |     |     |--- int
+                                     |     |     |     |--- id_b
+                                     |     |     |     |--- assign_op
+                                     |     |     |     |--- <ASSIGN>
+                                     |     |     |           |--- <ARITHMETIC_OPERATION>
+                                     |     |     |                 |--- <ARITHMETIC_TERM>
+                                     |     |     |                 |     |--- <ARITHMETIC_FACTOR>
+                                     |     |     |                 |     |     |--- id_x
+                                     |     |     |                 |     |--- <ARITHMETIC_TERM_>
+                                     |     |     |                 |           |--- <!epsilon>
+                                     |     |     |                 |--- <ARITHMETIC_OPERATION_>
+                                     |     |     |                       |--- <!epsilon>
+                                     |     |     |--- terminate
+                                     |     |     |--- <S>
+                                     |     |           |--- <ROAR>
+                                     |     |           |     |--- roar
+                                     |     |           |     |--- parenthesis_start
+                                     |     |           |     |--- id_a
+                                     |     |           |     |--- parenthesis_end
+                                     |     |           |--- terminate
+                                     |     |           |--- <S>
+                                     |     |                 |--- <ROAR>
+                                     |     |                 |     |--- roar
+                                     |     |                 |     |--- parenthesis_start
+                                     |     |                 |     |--- id_b
+                                     |     |                 |     |--- parenthesis_end
+                                     |     |                 |--- terminate
+                                     |     |                 |--- <S>
+                                     |     |                       |--- <!epsilon>
+                                     |     |--- bracket_end
+                                     |     |--- <ELSE_STATEMENT>
                                      |--- <terminate>
                                      |--- <S>
                                            |--- <!epsilon>

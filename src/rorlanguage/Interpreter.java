@@ -65,7 +65,12 @@ public class Interpreter {
                 roar();
             } else if (match("<A>")) {
                 assign();
-            } else {
+            } else if (match("<IF_STATEMENT>")) {
+                conditional();
+            } else if (match("<ARITHMETIC_OPERATION>")) {
+                
+            }
+            else {
                 ptr++;
             }
         }
@@ -170,17 +175,63 @@ public class Interpreter {
 
         return stk.pop();
     }
-    
-    private void logicalOp() {
-        
-    }
 
     private void loop() {
         
     }
     
     private void conditional()  {
+        ptr += 2; // skip If and (
+        int operand1;
+        System.out.println(tokens.get(ptr));
+        if (tokens.get(ptr).startsWith("aop_"))    {
+            operand1 = arithmeticOp(tokens.get(ptr));
+        }
+        else if (tokens.get(ptr).contains("id_"))   {
+            operand1 = (Integer) st.getTokenValue(tokens.get(ptr), "value");
+        }
+        else    {
+            operand1 = Integer.parseInt(tokens.get(ptr));
+        }
+        ptr += 2;
+        System.out.println("dick");
+        System.out.println(tokens.get(ptr));
         
+        boolean condition;
+        if (match("<RELATIONAL_OPERATION>")) {
+            condition = relationalOp(operand1);
+        }
+        else    {
+            condition = logicalOp(operand1);
+        }
+        
+        // TODO: ACTUAL IF LOGIC
+    }
+    
+    // TODO
+    private boolean logicalOp(int operand1) {
+        return false;
+    }
+    
+    // DONE
+    private boolean relationalOp(int operand1)  {
+        boolean result;
+        
+        ptr++;
+        String operator = tokens.get(ptr++);
+        int operand2 = arithmeticOp(tokens.get(ptr));
+        
+        switch (operator) {
+            case "gte" -> result = operand1 >= operand2;
+            case "lte" -> result = operand1 <= operand2;
+            case "gt" -> result = operand1 > operand2;
+            case "lt" -> result = operand1 < operand2;
+            case "equal_rel" -> result = operand1 == operand2;
+            case "not_equal_rel" -> result = operand1 != operand2;
+            default -> result = false;
+        }
+
+        return result;
     }
     
     boolean match(String token) {
@@ -313,8 +364,134 @@ class AOPReconstructor {
         while (!stack.isEmpty()) {
             result.add(stack.pop());
         }
-
         return result;
     }
-
 }
+
+//class RELOPReconstructor {
+//
+//    private ArrayList<String> res;
+//    private String infix;
+//    private ArrayList<String> result;
+//
+//    public RELOPReconstructor(ParseTreeNode ptn) {
+//        this.res = new ArrayList<String>();
+//        traverse(ptn);
+//        infix = "";
+//        for (String str : res) {
+//
+//            switch (str) {
+//                case "lt":
+//                    infix = infix + "< ";
+//                    break;
+//                case "gt":
+//                    infix = infix + "> ";
+//                    break;
+//                case "equal_rel":
+//                    infix = infix + "== ";
+//                    break;
+//                case "not_equal_rel":
+//                    infix = infix + "!= ";
+//                    break;
+//                case "lte":
+//                    infix = infix + "<= ";
+//                    break;
+//                case "gte":
+//                    infix = infix + ">= ";
+//                    break;
+//                default:
+//                    infix = infix + str + " ";
+//                    break;
+//            }
+//        }
+//
+//        result = infixToPostfix(infix.split(" "));
+//    }
+//
+//    private void traverse(ParseTreeNode ptn) {
+//        if (ptn == null) {
+//            return;
+//        }
+//
+//        String[] nonOps = {
+//            "<RELATIONAL_OPERATION>",
+//            "<RELATIONAL_OPERATORS>",
+//            "<ARITHMETIC_OPERATION>",
+//            "<ARITHMETIC_OPERATION_>",
+//            "<ARITHMETIC_TERM>",
+//            "<ARITHMETIC_TERM_>",
+//            "<ARITHMETIC_FACTOR>",
+//            "<!epsilon>",};
+//
+//        if (!Arrays.stream(nonOps).anyMatch(ptn.name::contains)) {
+//            res.add(ptn.name);
+//        }
+//
+//        for (ParseTreeNode child : ptn.getChildren()) {
+//            traverse(child);
+//        }
+//    }
+//
+//    public ArrayList<String> getAOPArray() {
+//        return res;
+//    }
+//
+//    public ArrayList<String> getPostFix() {
+//        return result;
+//    }
+//
+//    static int prec(String s) {
+//        if ("<".equals(s) || "<=".equals(s)) {
+//            return 3;
+//        } else if (">".equals(s) || ">=".equals(s)) {
+//            return 2;
+//        } else if ("==".equals(s) || "!=".equals(s)) {
+//            return 1;
+//        }
+//        else    {
+//            return -1;
+//        }
+//    }
+//
+//    // Function to return associativity of operators
+//    static char associativity(char c) {
+//        if (c == '^') {
+//            return 'R';
+//        }
+//        return 'L'; // Default to left-associative
+//    }
+//
+//    // The main function to convert infix expression to postfix expression
+//    static ArrayList<String> infixToPostfix(String[] infix) {
+//        ArrayList<String> result = new ArrayList<>();
+//        Stack<String> stack = new Stack<>();
+//
+//        for (String s : infix) {
+//            if ((s.charAt(0) >= 'a' && s.charAt(0) <= 'z') || (s.charAt(0) >= 'A' && s.charAt(0) <= 'Z') || (s.charAt(0) >= '0' && s.charAt(0) <= '9')) {
+//                result.add(s);
+//            } else if (s.charAt(0) == '(') {
+//                stack.push(s);
+//            } else if (s.charAt(0) == ')') {
+//                while (!stack.isEmpty() && stack.peek().charAt(0) != '(') {
+//                    result.add(stack.pop());
+//                }
+//                stack.pop(); // Pop '('
+//            } else {
+//                while (!stack.isEmpty() && (prec(s.charAt(0).) < prec(stack.peek().charAt(0))
+//                        || prec(s.charAt(0)) == prec(stack.peek().charAt(0))
+//                        && associativity(s.charAt(0)) == 'L')) {
+//                    result.add(stack.pop());
+//                }
+//                stack.push(s);
+//            }
+//        }
+//
+//        // Pop all the remaining elements from the stack
+//        while (!stack.isEmpty()) {
+//            result.add(stack.pop());
+//        }
+//
+//        return result;
+//    }
+//
+//}
