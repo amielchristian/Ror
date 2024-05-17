@@ -27,6 +27,7 @@ public class SyntaxAnalyzer {
     private ParseTreeNode ptn;
 
     public SyntaxAnalyzer(LexResult lr) {
+        System.out.println(lr.tokens);
         this.tokenQueue = new ArrayDeque<>(lr.tokens);
         this.lineTraceback = lr.lineTraceback;
         this.lookAhead = tokenQueue.poll();
@@ -359,16 +360,16 @@ public class SyntaxAnalyzer {
                 S(curPtn);
                 match("bracket_end", curPtn);
             } else {
-                match("parenthesis_start", curPtn);
-                if (lookAhead.equals("parenthesis_start")) {
-                    ARITHMETIC_OPERATION(curPtn);
-                } else if (lookAhead.contains("id_")) {
-                    match(lookAhead, curPtn);
-                } else if (isInt(lookAhead)) {
-                    match(lookAhead, curPtn);
-                }
-                CONDITION(curPtn);
-                match("parenthesis_end", curPtn);
+//                match("parenthesis_start", curPtn);
+//                if (lookAhead.equals("parenthesis_start")) {
+//                    ARITHMETIC_OPERATION(curPtn);
+//                } else if (lookAhead.contains("id_")) {
+//                    match(lookAhead, curPtn);
+//                } else if (isInt(lookAhead)) {
+//                    match(lookAhead, curPtn);
+//                }
+//                CONDITION(curPtn);
+//                match("parenthesis_end", curPtn);
                 match("bracket_start", curPtn);
                 S(curPtn);
                 match("bracket_end", curPtn);

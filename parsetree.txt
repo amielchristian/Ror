@@ -89,11 +89,18 @@
              |           |--- <ARITHMETIC_OPERATION>
              |                 |--- <ARITHMETIC_TERM>
              |                 |     |--- <ARITHMETIC_FACTOR>
-             |                 |     |     |--- 5
+             |                 |     |     |--- id_x
              |                 |     |--- <ARITHMETIC_TERM_>
              |                 |           |--- <!epsilon>
              |                 |--- <ARITHMETIC_OPERATION_>
-             |                       |--- <!epsilon>
+             |                       |--- minus_op
+             |                       |--- <ARITHMETIC_TERM>
+             |                       |     |--- <ARITHMETIC_FACTOR>
+             |                       |     |     |--- 35
+             |                       |     |--- <ARITHMETIC_TERM_>
+             |                       |           |--- <!epsilon>
+             |                       |--- <ARITHMETIC_OPERATION_>
+             |                             |--- <!epsilon>
              |--- terminate
              |--- <S>
                    |--- <D>
@@ -105,9 +112,13 @@
                    |           |--- <ARITHMETIC_OPERATION>
                    |                 |--- <ARITHMETIC_TERM>
                    |                 |     |--- <ARITHMETIC_FACTOR>
-                   |                 |     |     |--- 10
+                   |                 |     |     |--- 100
                    |                 |     |--- <ARITHMETIC_TERM_>
-                   |                 |           |--- <!epsilon>
+                   |                 |           |--- mult_op
+                   |                 |           |--- <ARITHMETIC_FACTOR>
+                   |                 |           |     |--- id_y
+                   |                 |           |--- <ARITHMETIC_TERM_>
+                   |                 |                 |--- <!epsilon>
                    |                 |--- <ARITHMETIC_OPERATION_>
                    |                       |--- <!epsilon>
                    |--- <terminate>

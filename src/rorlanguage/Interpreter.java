@@ -136,13 +136,37 @@ public class Interpreter {
     private int arithmeticOp(String aop) {
         int result = 0;
         ParseTreeNode arithmeticTree = aops.get(Integer.parseInt(aop.substring(4)));
-//        System.out.println(arithmeticTree);
-//        result = compute(arithmeticTree);
         AOPReconstructor aopr = new AOPReconstructor(arithmeticTree);
+        ArrayList<String> postfix = aopr.getPostFix();
+        Stack<Integer> stk = new Stack<>();
+        System.out.println(postfix);
+        for (String s : postfix) {
+            System.out.println(stk);
+            if (Character.isDigit(s.charAt(0))) {
+                stk.push(Integer.parseInt(s));
+            } else if (s.startsWith("id_")) {
+                stk.push((Integer)st.getTokenValue(s, "value"));
+            } else {
+                int val1 = stk.pop();
+                int val2 = stk.pop();
+                switch (s.charAt(0)) {
+                    case '+':
+                        stk.push(val2 + val1);
+                        break;
+                    case '-':
+                        stk.push(val2 - val1);
+                        break;
+                    case '/':
+                        stk.push(val2 / val1);
+                        break;
+                    case '*':
+                        stk.push(val2 * val1);
+                        break;
+                }
+            }
+        }
 
-//        System.out.println(aopr.getAOPArray());
-//        System.out.println(result);
-        return result;
+        return stk.pop();
     }
 
     boolean match(String token) {
@@ -160,17 +184,19 @@ class AOPReconstructor {
 
     private ArrayList<String> res;
     private String infix;
+    private ArrayList<String> result;
+
     public AOPReconstructor(ParseTreeNode ptn) {
         this.res = new ArrayList<String>();
         traverse(ptn);
         infix = "";
         for (String str : res) {
-            
+
             switch (str) {
                 case "add_op":
                     infix = infix + "+ ";
                     break;
-                case "sub_op":
+                case "minus_op":
                     infix = infix + "- ";
                     break;
                 case "mult_op":
@@ -186,12 +212,12 @@ class AOPReconstructor {
                     infix = infix + ") ";
                     break;
                 default:
-                    infix = infix + str  + " ";
+                    infix = infix + str + " ";
                     break;
             }
         }
-        
-        System.out.println(infixToPostfix(infix));
+
+        result = infixToPostfix(infix.split(" "));
     }
 
     private void traverse(ParseTreeNode ptn) {
@@ -219,66 +245,62 @@ class AOPReconstructor {
     public ArrayList<String> getAOPArray() {
         return res;
     }
-    
-    static int prec(char c) {
-        if (c == '^')
-            return 3;
-        else if (c == '/' || c == '*')
-            return 2;
-        else if (c == '+' || c == '-')
-            return 1;
-        else
-            return -1;
+
+    public ArrayList<String> getPostFix() {
+        return result;
     }
- 
+
+    static int prec(char c) {
+        if (c == '^') {
+            return 3;
+        } else if (c == '/' || c == '*') {
+            return 2;
+        } else if (c == '+' || c == '-') {
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+
     // Function to return associativity of operators
     static char associativity(char c) {
-        if (c == '^')
+        if (c == '^') {
             return 'R';
+        }
         return 'L'; // Default to left-associative
     }
- 
+
     // The main function to convert infix expression to postfix expression
-    static String infixToPostfix(String s) {
-        StringBuilder result = new StringBuilder();
-        Stack<Character> stack = new Stack<>();
- 
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
- 
-            // If the scanned character is an operand, add it to the output string.
-            if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) {
-                result.append(c);
-            }
-            // If the scanned character is an ?(?, push it to the stack.
-            else if (c == '(') {
-                stack.push(c);
-            }
-            // If the scanned character is an ?)?, pop and add to the output string from the stack
-            // until an ?(? is encountered.
-            else if (c == ')') {
-                while (!stack.isEmpty() && stack.peek() != '(') {
-                    result.append(stack.pop());
+    static ArrayList<String> infixToPostfix(String[] infix) {
+        ArrayList<String> result = new ArrayList<>();
+        Stack<String> stack = new Stack<>();
+
+        for (String s : infix) {
+            if ((s.charAt(0) >= 'a' && s.charAt(0) <= 'z') || (s.charAt(0) >= 'A' && s.charAt(0) <= 'Z') || (s.charAt(0) >= '0' && s.charAt(0) <= '9')) {
+                result.add(s);
+            } else if (s.charAt(0) == '(') {
+                stack.push(s);
+            } else if (s.charAt(0) == ')') {
+                while (!stack.isEmpty() && stack.peek().charAt(0) != '(') {
+                    result.add(stack.pop());
                 }
                 stack.pop(); // Pop '('
-            }
-            // If an operator is scanned
-            else {
-                while (!stack.isEmpty() && (prec(s.charAt(i)) < prec(stack.peek()) ||
-                                             prec(s.charAt(i)) == prec(stack.peek()) &&
-                                                 associativity(s.charAt(i)) == 'L')) {
-                    result.append(stack.pop());
+            } else {
+                while (!stack.isEmpty() && (prec(s.charAt(0)) < prec(stack.peek().charAt(0))
+                        || prec(s.charAt(0)) == prec(stack.peek().charAt(0))
+                        && associativity(s.charAt(0)) == 'L')) {
+                    result.add(stack.pop());
                 }
-                stack.push(c);
+                stack.push(s);
             }
         }
- 
+
         // Pop all the remaining elements from the stack
         while (!stack.isEmpty()) {
-            result.append(stack.pop());
+            result.add(stack.pop());
         }
-        
-        return result.toString();
+
+        return result;
     }
 
 }

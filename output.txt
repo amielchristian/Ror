@@ -27,11 +27,15 @@ terminate
 int
 id_y
 assign_op
-5
+id_x
+minus_op
+35
 terminate
 int
 id_z
 assign_op
-10
+100
+mult_op
+id_y
 terminate
 Total errors: 0
