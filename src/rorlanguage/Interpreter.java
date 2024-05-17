@@ -57,23 +57,26 @@ public class Interpreter {
 
     public void run() {
         System.out.println("INTERPRETER -------------------------------");
-        while (ptr < tokens.size() - 1) {
-            if (match("<P>")) {
-            } else if (match("<D>")) {
-                declare();
-            } else if (match("<ROAR>")) {
-                roar();
-            } else if (match("<A>")) {
-                assign();
-            } else {
-                ptr++;
+        try {
+            while (ptr < tokens.size() - 1) {
+                if (match("<P>")) {
+                } else if (match("<D>")) {
+                    declare();
+                } else if (match("<ROAR>")) {
+                    roar();
+                } else if (match("<A>")) {
+                    assign();
+                } else {
+                    ptr++;
+                }
             }
+        } catch (RuntimeErrorException ree) {
+            ree.printStackTrace();
         }
     }
 
     // DONE
-    private void declare() {
-        // TODO: Check if declared in symbol table
+    private void declare() throws RuntimeErrorException {
         match("<DT>");
         String datatype = tokens.get(ptr++);
         String identifier = tokens.get(ptr++);
@@ -85,19 +88,25 @@ public class Interpreter {
         if (match("<NOM>")) {
             value = nom();
         } else if (tokens.get(ptr).startsWith("aop_")) {
-            value = arithmeticOp(tokens.get(ptr));
+            value = arithmeticOp(tokens.get(ptr), identifier);
             ptr++;
-        } else if (tokens.get(ptr).contains("\"") || tokens.get(ptr).equals("True") || tokens.get(ptr).equals("False")) {
+        } else if (tokens.get(ptr).contains("\"")) {
+            value = tokens.get(ptr);
+        } else {
             value = tokens.get(ptr);
         }
-        
+
+        // TYPE CHECKING
+        typeCheck(datatype, value, identifier.substring(3));
+
         st.setTokenDatatype(identifier, datatype);
+
         st.updateTokenValue(identifier, value);
         ptr++; // skips terminate (?)
     }
 
     // DONE
-    private void assign() {
+    private void assign() throws RuntimeErrorException {
         String identifier = tokens.get(ptr++);
         ptr++; // skips assign_op
         Object value = null;
@@ -107,12 +116,11 @@ public class Interpreter {
         if (match("<NOM>")) {
             value = nom();
         } else if (tokens.get(ptr).startsWith("aop_")) {
-            value = arithmeticOp(tokens.get(ptr));
+            value = arithmeticOp(tokens.get(ptr), identifier);
             ptr++;
         } else if (tokens.get(ptr).contains("\"") || tokens.get(ptr).equals("True") || tokens.get(ptr).equals("False")) {
             value = tokens.get(ptr);
         }
-        
         st.updateTokenValue(identifier, value);
         ptr++;
     }
@@ -137,7 +145,7 @@ public class Interpreter {
     }
 
     // DONE
-    private int arithmeticOp(String aop) {
+    private int arithmeticOp(String aop, String literal) throws RuntimeErrorException {
         int result = 0;
         ParseTreeNode arithmeticTree = aops.get(Integer.parseInt(aop.substring(4)));
         AOPReconstructor aopr = new AOPReconstructor(arithmeticTree);
@@ -147,7 +155,12 @@ public class Interpreter {
             if (Character.isDigit(s.charAt(0))) {
                 stk.push(Integer.parseInt(s));
             } else if (s.startsWith("id_")) {
-                stk.push((Integer)st.getTokenValue(s, "value"));
+                if (!st.checkInitialization(s)) {
+                    referenceError(s.substring(3));
+                }
+                Object val = st.getTokenValue(s, "value");
+                typeCheck("int", val, literal.substring(3));
+                stk.push((Integer) val);
             } else {
                 int val1 = stk.pop();
                 int val2 = stk.pop();
@@ -170,28 +183,68 @@ public class Interpreter {
 
         return stk.pop();
     }
-    
+
     private void logicalOp() {
-        
+
     }
 
     private void loop() {
-        
+
     }
-    
-    private void conditional()  {
-        
+
+    private void conditional() {
+
     }
-    
-    boolean match(String token) {
+
+    private boolean match(String token) {
         if (tokens.get(ptr).equals(token)) {
 //            System.out.println("MATCHING: " + token + " WITH: " + tokens.get(ptr));
             ptr++;
             return true;
         } else {
             return false;
+
         }
     }
+
+    private void typeCheck(String datatype, Object value, String literal) throws RuntimeErrorException {
+
+        if (datatype.equals("word")) {
+            return;
+        }
+
+        String valueType = "word";
+
+        if (value instanceof Integer) {
+            valueType = "Int";
+        }
+
+        if (value.equals("true_bool")
+                || value.equals("false_bool")) {
+            valueType = "Bool";
+        }
+        if (datatype.equals(valueType.toLowerCase())) {
+            return;
+        } else {
+            String message = "Type Mismatch, type: "
+                    + valueType
+                    + " is incompatible with datatype: "
+                    + datatype
+                    + " literal: "
+                    + literal;
+
+            throw new RuntimeErrorException(message);
+        }
+    }
+
+    private void referenceError(String literal) throws RuntimeErrorException {
+        String message = "Null Pointer Exception!, variable: "
+                + literal 
+                + " is not initialized";
+
+        throw new RuntimeErrorException(message);
+    }
+
 }
 
 class AOPReconstructor {
@@ -264,8 +317,8 @@ class AOPReconstructor {
         return result;
     }
 
-    static int prec(char c) {
-        if (c == '^') {
+    private int prec(char c) {
+        if (c == '^') {;
             return 3;
         } else if (c == '/' || c == '*') {
             return 2;
@@ -277,7 +330,7 @@ class AOPReconstructor {
     }
 
     // Function to return associativity of operators
-    static char associativity(char c) {
+    private char associativity(char c) {
         if (c == '^') {
             return 'R';
         }
@@ -285,7 +338,7 @@ class AOPReconstructor {
     }
 
     // The main function to convert infix expression to postfix expression
-    static ArrayList<String> infixToPostfix(String[] infix) {
+    private ArrayList<String> infixToPostfix(String[] infix) {
         ArrayList<String> result = new ArrayList<>();
         Stack<String> stack = new Stack<>();
 
@@ -317,4 +370,140 @@ class AOPReconstructor {
         return result;
     }
 
+}
+
+class LOPReconstructor {
+
+    private ArrayList<String> res;
+    private String infix;
+    private ArrayList<String> result;
+
+    public LOPReconstructor(ParseTreeNode ptn) {
+        this.res = new ArrayList<String>();
+        traverse(ptn);
+        infix = "";
+        for (String str : res) {
+
+            switch (str) {
+                case "add_op":
+                    infix = infix + "+ ";
+                    break;
+                case "minus_op":
+                    infix = infix + "- ";
+                    break;
+                case "mult_op":
+                    infix = infix + "* ";
+                    break;
+                case "div_op":
+                    infix = infix + "/ ";
+                    break;
+                case "parenthesis_start":
+                    infix = infix + "( ";
+                    break;
+                case "parenthesis_end":
+                    infix = infix + ") ";
+                    break;
+                default:
+                    infix = infix + str + " ";
+                    break;
+            }
+        }
+
+        result = infixToPostfix(infix.split(" "));
+    }
+
+    private void traverse(ParseTreeNode ptn) {
+        if (ptn == null) {
+            return;
+        }
+
+        String[] nonOps = {
+            "<ARITHMETIC_OPERATION>",
+            "<ARITHMETIC_OPERATION_>",
+            "<ARITHMETIC_TERM>",
+            "<ARITHMETIC_TERM_>",
+            "<ARITHMETIC_FACTOR>",
+            "<!epsilon>",};
+
+        if (!Arrays.stream(nonOps).anyMatch(ptn.name::contains)) {
+            res.add(ptn.name);
+        }
+
+        for (ParseTreeNode child : ptn.getChildren()) {
+            traverse(child);
+        }
+    }
+
+    public ArrayList<String> getAOPArray() {
+        return res;
+    }
+
+    public ArrayList<String> getPostFix() {
+        return result;
+    }
+
+    private int prec(char c) {
+        if (c == '^') {;
+            return 3;
+        } else if (c == '/' || c == '*') {
+            return 2;
+        } else if (c == '+' || c == '-') {
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+
+    // Function to return associativity of operators
+    private char associativity(char c) {
+        if (c == '^') {
+            return 'R';
+        }
+        return 'L'; // Default to left-associative
+    }
+
+    // The main function to convert infix expression to postfix expression
+    private ArrayList<String> infixToPostfix(String[] infix) {
+        ArrayList<String> result = new ArrayList<>();
+        Stack<String> stack = new Stack<>();
+
+        for (String s : infix) {
+            if ((s.charAt(0) >= 'a' && s.charAt(0) <= 'z') || (s.charAt(0) >= 'A' && s.charAt(0) <= 'Z') || (s.charAt(0) >= '0' && s.charAt(0) <= '9')) {
+                result.add(s);
+            } else if (s.charAt(0) == '(') {
+                stack.push(s);
+            } else if (s.charAt(0) == ')') {
+                while (!stack.isEmpty() && stack.peek().charAt(0) != '(') {
+                    result.add(stack.pop());
+                }
+                stack.pop(); // Pop '('
+            } else {
+                while (!stack.isEmpty() && (prec(s.charAt(0)) < prec(stack.peek().charAt(0))
+                        || prec(s.charAt(0)) == prec(stack.peek().charAt(0))
+                        && associativity(s.charAt(0)) == 'L')) {
+                    result.add(stack.pop());
+                }
+                stack.push(s);
+            }
+        }
+
+        // Pop all the remaining elements from the stack
+        while (!stack.isEmpty()) {
+            result.add(stack.pop());
+        }
+
+        return result;
+    }
+
+}
+
+class RuntimeErrorException extends Throwable {
+
+    public RuntimeErrorException() {
+        super();
+    }
+
+    public RuntimeErrorException(String message) {
+        super(message);
+    }
 }

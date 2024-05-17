@@ -1,9 +1,3 @@
-Int x = 5;
-Int y = x - 35;
-Int z = 100 * y;
-Word a = "hello!";
-a = "pakyu";
-
-If (10 > 5) {
-    Roar(a);
+If (x Or (y And z)) {
+    Roar("Hello");
 };

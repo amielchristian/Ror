@@ -16,3 +16,5 @@ nbproject/private/private.properties
 *.properties
 *.properties
 *.xml
+output.txt
+parsetree.txt

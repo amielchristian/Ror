@@ -53,6 +53,13 @@ public class SymbolTable {
         
         return str;
     }
+    
+    public boolean checkInitialization(String identifier) {
+        if (map.get(identifier).containsKey("value")) {
+            return true;
+        }
+        return false;
+    }
 }
 
 class SymbolException extends Throwable {
