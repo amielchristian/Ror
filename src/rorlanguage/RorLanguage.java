@@ -26,6 +26,5 @@ public class RorLanguage {
         ParseTreeNode ptn = sa.getParseTree();
         Interpreter intptr = new Interpreter(ptn, st);
         intptr.run();
-        System.out.println(st);
     }
 }

@@ -93,14 +93,7 @@
              |                 |     |--- <ARITHMETIC_TERM_>
              |                 |           |--- <!epsilon>
              |                 |--- <ARITHMETIC_OPERATION_>
-             |                       |--- minus_op
-             |                       |--- <ARITHMETIC_TERM>
-             |                       |     |--- <ARITHMETIC_FACTOR>
-             |                       |     |     |--- 35
-             |                       |     |--- <ARITHMETIC_TERM_>
-             |                       |           |--- <!epsilon>
-             |                       |--- <ARITHMETIC_OPERATION_>
-             |                             |--- <!epsilon>
+             |                       |--- <!epsilon>
              |--- terminate
              |--- <S>
                    |--- <D>
@@ -121,6 +114,27 @@
                    |                 |                 |--- <!epsilon>
                    |                 |--- <ARITHMETIC_OPERATION_>
                    |                       |--- <!epsilon>
-                   |--- <terminate>
+                   |--- terminate
                    |--- <S>
-                         |--- <!epsilon>
+                         |--- <ROAR>
+                         |     |--- roar
+                         |     |--- parenthesis_start
+                         |     |--- id_x
+                         |     |--- parenthesis_end
+                         |--- terminate
+                         |--- <S>
+                               |--- <ROAR>
+                               |     |--- roar
+                               |     |--- parenthesis_start
+                               |     |--- id_y
+                               |     |--- parenthesis_end
+                               |--- terminate
+                               |--- <S>
+                                     |--- <ROAR>
+                                     |     |--- roar
+                                     |     |--- parenthesis_start
+                                     |     |--- id_z
+                                     |     |--- parenthesis_end
+                                     |--- <terminate>
+                                     |--- <S>
+                                           |--- <!epsilon>

@@ -44,7 +44,6 @@ public class Interpreter {
         if (!ptn.name.equals("<S>") && !ptn.name.equals("<ARITHMETIC_OPERATION>")) {
             tokens.add(ptn.name);
         } else if (ptn.name.equals("<ARITHMETIC_OPERATION>")) {
-            System.out.println(ptn);
             tokens.add("aop_" + aops.size());
             ParseTreeNode ptnCopy = new ParseTreeNode("<ARITHMETIC_OPERATION>");
             ptnCopy.setChildren(ptn.getChildren());
@@ -94,6 +93,8 @@ public class Interpreter {
         } else if (match("")) {
 
         }
+        
+        
         st.setTokenDatatype(identifier, datatype);
         st.updateTokenValue(identifier, value);
         ptr++; // skips terminate (?)
@@ -124,10 +125,10 @@ public class Interpreter {
     private void roar() {
         ptr += 2;
         if (tokens.get(ptr).startsWith("id_")) {
-            System.out.print(st.getTokenValue(tokens.get(ptr), "value"));
+            System.out.println(st.getTokenValue(tokens.get(ptr), "value"));
             ptr++;
         } else if (tokens.get(ptr).contains("\"")) {
-            System.out.print(tokens.get(ptr));
+            System.out.println(tokens.get(ptr));
         }
         ptr += 2;
     }
@@ -139,9 +140,7 @@ public class Interpreter {
         AOPReconstructor aopr = new AOPReconstructor(arithmeticTree);
         ArrayList<String> postfix = aopr.getPostFix();
         Stack<Integer> stk = new Stack<>();
-        System.out.println(postfix);
         for (String s : postfix) {
-            System.out.println(stk);
             if (Character.isDigit(s.charAt(0))) {
                 stk.push(Integer.parseInt(s));
             } else if (s.startsWith("id_")) {
@@ -177,6 +176,10 @@ public class Interpreter {
         } else {
             return false;
         }
+    }
+    
+    boolean typeCheck(String toCheck, Object Value) {
+        return false;
     }
 }
 
@@ -302,5 +305,17 @@ class AOPReconstructor {
 
         return result;
     }
-
+    
 }
+
+class RuntimeErrorException extends Throwable {
+    public RuntimeErrorException() {
+        super();
+        
+    }
+
+    public RuntimeErrorException(String message) {
+        super(message);
+    }
+}
+

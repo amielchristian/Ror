@@ -1,3 +1,7 @@
 Int x = 5 + 3 * (5 * (6 +5)) / 3 * (2 + 4);
-Int y = x - 35;
+Int y = x;
 Int z = 100 * y;
+
+Roar(x);
+Roar(y);
+Roar(z);
