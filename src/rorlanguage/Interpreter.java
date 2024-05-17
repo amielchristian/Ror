@@ -5,7 +5,9 @@
 package rorlanguage;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
+import java.util.Stack;
 import modules.ParseTreeNode;
 import modules.SymbolTable;
 
@@ -20,10 +22,12 @@ public class Interpreter {
     private int ptr;
     private ParseTreeNode ptn;
     private int index;
-    
+    private ArrayList<ParseTreeNode> aops;
+
     public Interpreter(ParseTreeNode ptn, SymbolTable st) {
         this.st = st;
         tokens = new ArrayList<String>();
+        aops = new ArrayList<ParseTreeNode>();
         ptr = 0;
         this.ptn = ptn;
         this.index = 0;
@@ -37,8 +41,15 @@ public class Interpreter {
             return;
         }
 
-        if (!ptn.name.equals("<S>")) {
+        if (!ptn.name.equals("<S>") && !ptn.name.equals("<ARITHMETIC_OPERATION>")) {
             tokens.add(ptn.name);
+        } else if (ptn.name.equals("<ARITHMETIC_OPERATION>")) {
+            System.out.println(ptn);
+            tokens.add("aop_" + aops.size());
+            ParseTreeNode ptnCopy = new ParseTreeNode("<ARITHMETIC_OPERATION>");
+            ptnCopy.setChildren(ptn.getChildren());
+            aops.add(ptnCopy);
+            ptn.removeChildren();
         }
         for (ParseTreeNode child : ptn.getChildren()) {
             traverse(child);
@@ -53,8 +64,10 @@ public class Interpreter {
                 declare();
             } else if (match("<ROAR>")) {
                 roar();
-            } else if (match("<A>"))    {
+            } else if (match("<A>")) {
                 assign();
+            } else {
+                ptr++;
             }
         }
     }
@@ -71,26 +84,24 @@ public class Interpreter {
         ptr++; // skips assign_op
         Object value = null;
         ptr++; // skips <ASSIGN>
-        
+
         // match literals, input statements, and operations
         if (match("<NOM>")) {
             value = nom();
-        } else if (match("<ARITHMETIC_OPERATION>")) {
-            // TODO
-            arithmeticOp();
+        } else if (tokens.get(ptr).startsWith("aop_")) {
+            value = arithmeticOp(tokens.get(ptr));
             ptr++;
-            value = 69;
-        } else if (match(""))   {
-            
+        } else if (match("")) {
+
         }
         st.setTokenDatatype(identifier, datatype);
         st.updateTokenValue(identifier, value);
         ptr++; // skips terminate (?)
     }
-    
+
     // TODO
     // gusto ko mamaya gawing same logic lang yung declaration and assignment kasi datatype lang naman pinagkaiba nila
-    private void assign()   {
+    private void assign() {
         String identifier = tokens.get(ptr++);
         ptr++; // skips assign_op
         Object value = null;
@@ -115,128 +126,22 @@ public class Interpreter {
         if (tokens.get(ptr).startsWith("id_")) {
             System.out.print(st.getTokenValue(tokens.get(ptr), "value"));
             ptr++;
-        }
-        else if (tokens.get(ptr).contains("\""))   {
+        } else if (tokens.get(ptr).contains("\"")) {
             System.out.print(tokens.get(ptr));
         }
         ptr += 2;
     }
-    
-    // 1. get parse tree of arithmetic operation
-    private int arithmeticOp()  {
-        int result = 0;
-        ParseTreeNode arithmeticTree = ptn.getNodeFromDescendant(ptr);
-        System.out.println(arithmeticTree);
-        result = compute(arithmeticTree);
-        System.out.println(result);
-        return result;
-    }
-    private int compute(ParseTreeNode ptn)   {
-        int result = 0;
 
-        for (ParseTreeNode child : ptn.getChildren())   {
-            if (child.name.equals("<!epsilon>"))    {
-                result = -1;
-            }
-        }
-        
-        // GRRRRAAAAAAAAAAAAAAAAAH
-        if (ptn.name.equals("<ARITHMETIC_TERM>")) {
-            ArrayList<ParseTreeNode> children = ptn.getChildren();
-            
-            int op = 0;
-            String opPosition = children.get(1).getChildren().get(0).name;
-            if (opPosition.contains("_op"))  {
-                if (opPosition.contains("mul")) {
-                    op = 0;
-                }
-                else if (opPosition.contains("div"))   {
-                    op = 1;
-                }
-                else if (opPosition.contains("mod"))   {
-                    op = 2;
-                }
-            }
-            else    {
-                return compute(children.get(0));
-            }
-            
-            int operand1 = compute(children.get(0));
-            int operand2 = compute(children.get(1).getChildren().get(1));
-            System.out.println("performing "+operand1+" "+op+" "+operand2);
-            switch (op) {
-                case 0:
-                    result = operand1*operand2;
-                    break;
-                case 1:
-                    result =  operand1/operand2;
-                    break;
-                case 2:
-                    result =  operand1%operand2;
-                    break;
-                default:
-                    result =  operand1;
-                    break;
-            }
-            children.get(1).getChildren().get(1).name = Integer.toString(result);
-            result = compute(children.get(1));
-        }
-        else if (ptn.name.equals("<ARITHMETIC_TERM_>")) {
-            ArrayList<ParseTreeNode> children = ptn.getChildren();
-            
-            int op = 0;
-            String opPosition = children.get(2).getChildren().get(0).name;
-            if (opPosition.contains("_op"))  {
-                if (opPosition.contains("mul")) {
-                    op = 0;
-                }
-                else if (opPosition.contains("div"))   {
-                    op = 1;
-                }
-                else if (opPosition.contains("mod"))   {
-                    op = 2;
-                }
-            }
-            else    {
-                return compute(children.get(1));
-            }
-            
-            int operand1 = compute(children.get(1));
-            int operand2 = compute(children.get(2));
-            System.out.println("performing "+operand1+" "+op+" "+operand2);
-            switch (op) {
-                case 0:
-                    result = operand1*operand2;
-                    break;
-                case 1:
-                    result =  operand1/operand2;
-                    break;
-                case 2:
-                    result =  operand1%operand2;
-                    break;
-                default:
-                    result =  operand1;
-                    break;
-            }
-        }
-        else if (ptn.name.equals("<ARITHMETIC_OPERATION>")) {
-            for (ParseTreeNode child : ptn.getChildren())   {
-                return compute(child);
-            }
-        }
-//        else if (ptn.name.equals("<ARITHMETIC_OPERATION_>"))
-        else if (ptn.name.equals("<ARITHMETIC_FACTOR>"))    {
-            String name = ptn.getChildren().getFirst().name;
-            if (name.contains("id_"))    {  // int id
-                result =  (Integer) st.getTokenValue(tokens.get(ptr), "value");
-            }
-            else if (name.equals("parenthesis_start"))  { // arithmetic op
-                result =  compute(ptn.getChildren().get(1));
-            }
-            else    { // int literal
-                result =  Integer.parseInt(name);
-            }
-        }
+    // 1. get parse tree of arithmetic operation
+    private int arithmeticOp(String aop) {
+        int result = 0;
+        ParseTreeNode arithmeticTree = aops.get(Integer.parseInt(aop.substring(4)));
+//        System.out.println(arithmeticTree);
+//        result = compute(arithmeticTree);
+        AOPReconstructor aopr = new AOPReconstructor(arithmeticTree);
+
+//        System.out.println(aopr.getAOPArray());
+//        System.out.println(result);
         return result;
     }
 
@@ -249,4 +154,131 @@ public class Interpreter {
             return false;
         }
     }
+}
+
+class AOPReconstructor {
+
+    private ArrayList<String> res;
+    private String infix;
+    public AOPReconstructor(ParseTreeNode ptn) {
+        this.res = new ArrayList<String>();
+        traverse(ptn);
+        infix = "";
+        for (String str : res) {
+            
+            switch (str) {
+                case "add_op":
+                    infix = infix + "+ ";
+                    break;
+                case "sub_op":
+                    infix = infix + "- ";
+                    break;
+                case "mult_op":
+                    infix = infix + "* ";
+                    break;
+                case "div_op":
+                    infix = infix + "/ ";
+                    break;
+                case "parenthesis_start":
+                    infix = infix + "( ";
+                    break;
+                case "parenthesis_end":
+                    infix = infix + ") ";
+                    break;
+                default:
+                    infix = infix + str  + " ";
+                    break;
+            }
+        }
+        
+        System.out.println(infixToPostfix(infix));
+    }
+
+    private void traverse(ParseTreeNode ptn) {
+        if (ptn == null) {
+            return;
+        }
+
+        String[] nonOps = {
+            "<ARITHMETIC_OPERATION>",
+            "<ARITHMETIC_OPERATION_>",
+            "<ARITHMETIC_TERM>",
+            "<ARITHMETIC_TERM_>",
+            "<ARITHMETIC_FACTOR>",
+            "<!epsilon>",};
+
+        if (!Arrays.stream(nonOps).anyMatch(ptn.name::contains)) {
+            res.add(ptn.name);
+        }
+
+        for (ParseTreeNode child : ptn.getChildren()) {
+            traverse(child);
+        }
+    }
+
+    public ArrayList<String> getAOPArray() {
+        return res;
+    }
+    
+    static int prec(char c) {
+        if (c == '^')
+            return 3;
+        else if (c == '/' || c == '*')
+            return 2;
+        else if (c == '+' || c == '-')
+            return 1;
+        else
+            return -1;
+    }
+ 
+    // Function to return associativity of operators
+    static char associativity(char c) {
+        if (c == '^')
+            return 'R';
+        return 'L'; // Default to left-associative
+    }
+ 
+    // The main function to convert infix expression to postfix expression
+    static String infixToPostfix(String s) {
+        StringBuilder result = new StringBuilder();
+        Stack<Character> stack = new Stack<>();
+ 
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+ 
+            // If the scanned character is an operand, add it to the output string.
+            if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) {
+                result.append(c);
+            }
+            // If the scanned character is an ?(?, push it to the stack.
+            else if (c == '(') {
+                stack.push(c);
+            }
+            // If the scanned character is an ?)?, pop and add to the output string from the stack
+            // until an ?(? is encountered.
+            else if (c == ')') {
+                while (!stack.isEmpty() && stack.peek() != '(') {
+                    result.append(stack.pop());
+                }
+                stack.pop(); // Pop '('
+            }
+            // If an operator is scanned
+            else {
+                while (!stack.isEmpty() && (prec(s.charAt(i)) < prec(stack.peek()) ||
+                                             prec(s.charAt(i)) == prec(stack.peek()) &&
+                                                 associativity(s.charAt(i)) == 'L')) {
+                    result.append(stack.pop());
+                }
+                stack.push(c);
+            }
+        }
+ 
+        // Pop all the remaining elements from the stack
+        while (!stack.isEmpty()) {
+            result.append(stack.pop());
+        }
+        
+        return result.toString();
+    }
+
 }

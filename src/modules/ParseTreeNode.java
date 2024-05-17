@@ -5,7 +5,9 @@
 package modules;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 /**
  *
@@ -56,6 +58,15 @@ public class ParseTreeNode {
     public ArrayList<ParseTreeNode> getChildren() {
         return children;
     }
+    
+    public void removeChildren() {
+        this.children.clear();
+    }
+    
+    public void setChildren(ArrayList<ParseTreeNode> children) {
+        this.children = (ArrayList<ParseTreeNode>) children.clone();
+    }
+    
 
     public ParseTreeNode getNodeFromDescendant(int index) {
         ParseTreeNode node = null;
