@@ -71,10 +71,7 @@ public class Interpreter {
         }
     }
 
-    // reminder to me (amiel):
-    // these are the only valid assignment/declaration ops:
-    // Int x = 10;
-    // x = 5;
+    // DONE
     private void declare() {
         // TODO: Check if declared in symbol table
         match("<DT>");
@@ -90,26 +87,32 @@ public class Interpreter {
         } else if (tokens.get(ptr).startsWith("aop_")) {
             value = arithmeticOp(tokens.get(ptr));
             ptr++;
-        } else if (match("")) {
-
+        } else if (tokens.get(ptr).contains("\"") || tokens.get(ptr).equals("True") || tokens.get(ptr).equals("False")) {
+            value = tokens.get(ptr);
         }
-        
         
         st.setTokenDatatype(identifier, datatype);
         st.updateTokenValue(identifier, value);
         ptr++; // skips terminate (?)
     }
 
-    // TODO
-    // gusto ko mamaya gawing same logic lang yung declaration and assignment kasi datatype lang naman pinagkaiba nila
+    // DONE
     private void assign() {
         String identifier = tokens.get(ptr++);
         ptr++; // skips assign_op
         Object value = null;
         ptr++; // skips <ASSIGN>
+
+        // match literals, input statements, and operations
         if (match("<NOM>")) {
             value = nom();
+        } else if (tokens.get(ptr).startsWith("aop_")) {
+            value = arithmeticOp(tokens.get(ptr));
+            ptr++;
+        } else if (tokens.get(ptr).contains("\"") || tokens.get(ptr).equals("True") || tokens.get(ptr).equals("False")) {
+            value = tokens.get(ptr);
         }
+        
         st.updateTokenValue(identifier, value);
         ptr++;
     }
@@ -121,19 +124,19 @@ public class Interpreter {
         return sc.nextLine();
     }
 
-    // i think dapat magdagdag tayo ng pwedeng iprint :<
+    // DONE
     private void roar() {
         ptr += 2;
         if (tokens.get(ptr).startsWith("id_")) {
-            System.out.println(st.getTokenValue(tokens.get(ptr), "value"));
+            System.out.print(st.getTokenValue(tokens.get(ptr), "value"));
             ptr++;
         } else if (tokens.get(ptr).contains("\"")) {
-            System.out.println(tokens.get(ptr));
+            System.out.print(tokens.get(ptr));
         }
         ptr += 2;
     }
 
-    // 1. get parse tree of arithmetic operation
+    // DONE
     private int arithmeticOp(String aop) {
         int result = 0;
         ParseTreeNode arithmeticTree = aops.get(Integer.parseInt(aop.substring(4)));
@@ -167,7 +170,19 @@ public class Interpreter {
 
         return stk.pop();
     }
+    
+    private void logicalOp() {
+        
+    }
 
+    private void loop() {
+        
+    }
+    
+    private void conditional()  {
+        
+    }
+    
     boolean match(String token) {
         if (tokens.get(ptr).equals(token)) {
 //            System.out.println("MATCHING: " + token + " WITH: " + tokens.get(ptr));
@@ -176,10 +191,6 @@ public class Interpreter {
         } else {
             return false;
         }
-    }
-    
-    boolean typeCheck(String toCheck, Object Value) {
-        return false;
     }
 }
 
@@ -305,17 +316,5 @@ class AOPReconstructor {
 
         return result;
     }
-    
+
 }
-
-class RuntimeErrorException extends Throwable {
-    public RuntimeErrorException() {
-        super();
-        
-    }
-
-    public RuntimeErrorException(String message) {
-        super(message);
-    }
-}
-
