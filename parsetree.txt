@@ -3,58 +3,59 @@
        |--- <D>
        |     |--- <DT>
        |     |     |--- int
-       |     |--- id_x
+       |     |--- id_z
        |     |--- assign_op
        |     |--- <ASSIGN>
-       |           |--- <NOM>
-       |                 |--- nom
-       |                 |--- parenthesis_start
-       |                 |--- parenthesis_end
+       |           |--- <ARITHMETIC_OPERATION>
+       |                 |--- <ARITHMETIC_TERM>
+       |                 |     |--- <ARITHMETIC_FACTOR>
+       |                 |     |     |--- 10
+       |                 |     |--- <ARITHMETIC_TERM_>
+       |                 |           |--- mult_op
+       |                 |           |--- <ARITHMETIC_FACTOR>
+       |                 |           |     |--- 2
+       |                 |           |--- <ARITHMETIC_TERM_>
+       |                 |                 |--- mult_op
+       |                 |                 |--- <ARITHMETIC_FACTOR>
+       |                 |                 |     |--- parenthesis_start
+       |                 |                 |     |--- <ARITHMETIC_OPERATION>
+       |                 |                 |     |     |--- <ARITHMETIC_TERM>
+       |                 |                 |     |     |     |--- <ARITHMETIC_FACTOR>
+       |                 |                 |     |     |     |     |--- 5
+       |                 |                 |     |     |     |--- <ARITHMETIC_TERM_>
+       |                 |                 |     |     |           |--- <!epsilon>
+       |                 |                 |     |     |--- <ARITHMETIC_OPERATION_>
+       |                 |                 |     |           |--- add_op
+       |                 |                 |     |           |--- <ARITHMETIC_TERM>
+       |                 |                 |     |           |     |--- <ARITHMETIC_FACTOR>
+       |                 |                 |     |           |     |     |--- 6
+       |                 |                 |     |           |     |--- <ARITHMETIC_TERM_>
+       |                 |                 |     |           |           |--- <!epsilon>
+       |                 |                 |     |           |--- <ARITHMETIC_OPERATION_>
+       |                 |                 |     |                 |--- <!epsilon>
+       |                 |                 |     |--- parenthesis_end
+       |                 |                 |--- <ARITHMETIC_TERM_>
+       |                 |                       |--- mult_op
+       |                 |                       |--- <ARITHMETIC_FACTOR>
+       |                 |                       |     |--- 3
+       |                 |                       |--- <ARITHMETIC_TERM_>
+       |                 |                             |--- <!epsilon>
+       |                 |--- <ARITHMETIC_OPERATION_>
+       |                       |--- add_op
+       |                       |--- <ARITHMETIC_TERM>
+       |                       |     |--- <ARITHMETIC_FACTOR>
+       |                       |     |     |--- 7
+       |                       |     |--- <ARITHMETIC_TERM_>
+       |                       |           |--- <!epsilon>
+       |                       |--- <ARITHMETIC_OPERATION_>
+       |                             |--- <!epsilon>
        |--- terminate
        |--- <S>
-             |--- <D>
-             |     |--- <DT>
-             |     |     |--- int
-             |     |--- id_y
-             |     |--- assign_op
-             |     |--- <ASSIGN>
-             |           |--- <NOM>
-             |                 |--- nom
-             |                 |--- parenthesis_start
-             |                 |--- parenthesis_end
-             |--- terminate
+             |--- <ROAR>
+             |     |--- roar
+             |     |--- parenthesis_start
+             |     |--- "hi!"
+             |     |--- parenthesis_end
+             |--- <terminate>
              |--- <S>
-                   |--- <D>
-                   |     |--- <DT>
-                   |     |     |--- int
-                   |     |--- id_z
-                   |     |--- assign_op
-                   |     |--- <ASSIGN>
-                   |           |--- <NOM>
-                   |                 |--- nom
-                   |                 |--- parenthesis_start
-                   |                 |--- parenthesis_end
-                   |--- terminate
-                   |--- <S>
-                         |--- <ROAR>
-                         |     |--- roar
-                         |     |--- parenthesis_start
-                         |     |--- id_z
-                         |     |--- parenthesis_end
-                         |--- terminate
-                         |--- <S>
-                               |--- <ROAR>
-                               |     |--- roar
-                               |     |--- parenthesis_start
-                               |     |--- id_y
-                               |     |--- parenthesis_end
-                               |--- terminate
-                               |--- <S>
-                                     |--- <ROAR>
-                                     |     |--- roar
-                                     |     |--- parenthesis_start
-                                     |     |--- id_x
-                                     |     |--- parenthesis_end
-                                     |--- <terminate>
-                                     |--- <S>
-                                           |--- <!epsilon>
+                   |--- <!epsilon>

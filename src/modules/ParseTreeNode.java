@@ -16,6 +16,7 @@ public class ParseTreeNode {
     private ArrayList<ParseTreeNode> children;
     public String name;
     private int level;
+    public int index;
 
     public ParseTreeNode(String name) {
         this.name = name;
@@ -56,6 +57,22 @@ public class ParseTreeNode {
         return children;
     }
 
+    public ParseTreeNode getNodeFromDescendant(int index) {
+        ParseTreeNode node = null;
+        for (ParseTreeNode child : children)    {
+            if (child.index == index)   {
+                node = child;
+                break;
+            }
+            else    {
+                if (node == null)   {
+                    node = child.getNodeFromDescendant(index);
+                }
+            }
+        }
+        return node;
+    }
+    
     @Override
     public String toString() {
         StringBuilder buffer = new StringBuilder(50);

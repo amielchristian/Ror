@@ -54,3 +54,13 @@ public class SymbolTable {
         return str;
     }
 }
+
+class SymbolException extends Throwable {
+     public SymbolException() {
+        super();
+    }
+
+    public SymbolException(String message) {
+        super(message);
+    }
+}
