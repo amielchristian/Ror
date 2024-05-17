@@ -59,6 +59,10 @@ public class ParseTreeNode {
         return level;
     }
     
+    public void setName(String name) {
+        this.name = name;
+    }
+    
     public ArrayList<ParseTreeNode> getChildren() {
         return children;
     }

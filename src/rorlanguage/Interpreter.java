@@ -23,16 +23,21 @@ public class Interpreter {
     private ParseTreeNode ptn;
     private int index;
     private ArrayList<ParseTreeNode> aops;
+    private int ifctr;
 
     public Interpreter(ParseTreeNode ptn, SymbolTable st) {
         this.st = st;
         tokens = new ArrayList<String>();
         aops = new ArrayList<ParseTreeNode>();
+        ifctr = 0;
         ptr = 0;
         this.ptn = ptn;
         this.index = 0;
         traverse(this.ptn);
-        System.out.println(tokens);
+//        System.out.println(tokens);
+        for (String token : tokens) {
+            System.out.println(token);
+        }
     }
 
     private void traverse(ParseTreeNode ptn) {
@@ -41,12 +46,11 @@ public class Interpreter {
         if (ptn == null) {
             return;
         }
-        if (ptn.name.equals("<IF_STATEMENT>") 
-                || ptn.name.equals("<ELSE_STATEMENT>") 
-                || ptn.name.equals("<ELSE_STATEMENT_>")) {
-          tokens.add(ptn.name + "_" + ptn.getLevel());
-        } 
-        else if (!ptn.name.equals("<S>") && !ptn.name.equals("<ARITHMETIC_OPERATION>")) {
+        if (ptn.name.equals("<IF_STATEMENT>")) {
+            ifstmtReconstructor(ptn);
+            ifctr++;
+        }
+        if (!ptn.name.equals("<S>") && !ptn.name.equals("<ARITHMETIC_OPERATION>")) {
             tokens.add(ptn.name);
         } else if (ptn.name.equals("<ARITHMETIC_OPERATION>")) {
             tokens.add("aop_" + aops.size());
@@ -197,7 +201,7 @@ public class Interpreter {
 
     }
 
-    private void conditional() throws RuntimeErrorException{
+    private void conditional() throws RuntimeErrorException {
         ptr += 2; // skip If and (
         int operand1;
         System.out.println(tokens.get(ptr));
@@ -304,7 +308,33 @@ public class Interpreter {
         throw new RuntimeErrorException(message);
     }
 
+    private void ifstmtReconstructor(ParseTreeNode ptn) {
+        ParseTreeNode root = ptn;
+        root.getChildren().get(0).setName("if_" + ifctr);
+//        root.setName(name);
+        while (root.getChildren().getLast().getChildren().size() != 0) {
+            int lastIndex = root.getChildren().size() - 1;
+
+            for (ParseTreeNode node : root.getChildren().getLast().getChildren()) {
+                if (node.name.equals("<ELSE_STATEMENT_>")) {
+                    for (ParseTreeNode subnode : node.getChildren()) {
+                        if (subnode.name.equals("if")) {
+                            subnode.setName("if_" + ifctr);
+                        }
+                        root.addChild(subnode);
+                    }
+                } else {
+                    node.setName(node.name + "_" + ifctr);
+                    root.addChild(node);
+                }
+            }
+            root.getChildren().remove(lastIndex);
+        }
+//        System.out.println(root);
+    }
+
 }
+// <editor-fold defaultstate="collapsed" desc="Helper Classes">
 
 class AOPReconstructor {
 
@@ -564,3 +594,4 @@ class RuntimeErrorException extends Throwable {
         super(message);
     }
 }
+    // </editor-fold> 

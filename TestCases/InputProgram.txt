@@ -1,5 +1,21 @@
-If (x >= 4) {
-    Int b = x;
+Int x = 5;
+Int a = 1;
+Int b = 2;
+Int c = 3;
+Int d = 4;
+Int e = 5;
+Int c = 6;
+
+If (x >= 4) {   
     Roar(a);
     Roar(b);
+    If (x == 5) {
+        Roar(c);
+    };
+} Else If (x < 4) {
+    Roar(d);
+} Else If (x < 4) {
+    Roar(e);
+} Else {
+    Roar(f);
 };
