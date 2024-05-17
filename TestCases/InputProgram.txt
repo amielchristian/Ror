@@ -1,3 +1,5 @@
-If (x Or (y And z)) {
-    Roar("Hello");
+If (x >= 4) {
+    Int b = x;
+    Roar(a);
+    Roar(b);
 };

@@ -55,6 +55,10 @@ public class ParseTreeNode {
         this.level = level;
     }
     
+    public int getLevel() {
+        return level;
+    }
+    
     public ArrayList<ParseTreeNode> getChildren() {
         return children;
     }

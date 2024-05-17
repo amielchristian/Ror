@@ -13,14 +13,6 @@ import java.util.HashMap;
 public class SymbolTable {
     HashMap<String, HashMap<String, Object>> map;
     // example: "id_x" : {{"name" : "x"}, {"datatype" : "int"}, {"value" : 10}}
-    
-    public static void main(String[] args)  {
-        SymbolTable st = new SymbolTable();
-        st.addToken("x");
-        
-        System.out.println(st.toString());
-    }
-    
     public SymbolTable() {
         map = new HashMap<>();
     }

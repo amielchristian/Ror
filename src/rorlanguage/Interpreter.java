@@ -32,6 +32,7 @@ public class Interpreter {
         this.ptn = ptn;
         this.index = 0;
         traverse(this.ptn);
+        System.out.println(tokens);
     }
 
     private void traverse(ParseTreeNode ptn) {
@@ -40,8 +41,12 @@ public class Interpreter {
         if (ptn == null) {
             return;
         }
-
-        if (!ptn.name.equals("<S>") && !ptn.name.equals("<ARITHMETIC_OPERATION>")) {
+        if (ptn.name.equals("<IF_STATEMENT>") 
+                || ptn.name.equals("<ELSE_STATEMENT>") 
+                || ptn.name.equals("<ELSE_STATEMENT_>")) {
+          tokens.add(ptn.name + "_" + ptn.getLevel());
+        } 
+        else if (!ptn.name.equals("<S>") && !ptn.name.equals("<ARITHMETIC_OPERATION>")) {
             tokens.add(ptn.name);
         } else if (ptn.name.equals("<ARITHMETIC_OPERATION>")) {
             tokens.add("aop_" + aops.size());
@@ -66,6 +71,10 @@ public class Interpreter {
                     roar();
                 } else if (match("<A>")) {
                     assign();
+                } else if (match("<IF_STATEMENT>")) {
+                    conditional();
+                } else if (match("<ARITHMETIC_OPERATION>")) {
+
                 } else {
                     ptr++;
                 }
@@ -188,12 +197,62 @@ public class Interpreter {
 
     }
 
-    private void loop() {
+    private void conditional() throws RuntimeErrorException{
+        ptr += 2; // skip If and (
+        int operand1;
+        System.out.println(tokens.get(ptr));
+        if (tokens.get(ptr).startsWith("aop_")) {
+            operand1 = arithmeticOp(tokens.get(ptr), "");
+        } else if (tokens.get(ptr).contains("id_")) {
+            operand1 = (Integer) st.getTokenValue(tokens.get(ptr), "value");
+        } else {
+            operand1 = Integer.parseInt(tokens.get(ptr));
+        }
+        ptr += 2;
+        System.out.println("dick");
+        System.out.println(tokens.get(ptr));
 
+        boolean condition;
+        if (match("<RELATIONAL_OPERATION>")) {
+            condition = relationalOp(operand1);
+        } else {
+            condition = logicalOp(operand1);
+        }
+
+        // TODO: ACTUAL IF LOGIC
     }
 
-    private void conditional() {
+    // TODO
+    private boolean logicalOp(int operand1) {
+        return false;
+    }
 
+    // DONE
+    private boolean relationalOp(int operand1) throws RuntimeErrorException {
+        boolean result;
+
+        ptr++;
+        String operator = tokens.get(ptr++);
+        int operand2 = arithmeticOp(tokens.get(ptr), "");
+
+        switch (operator) {
+            case "gte" ->
+                result = operand1 >= operand2;
+            case "lte" ->
+                result = operand1 <= operand2;
+            case "gt" ->
+                result = operand1 > operand2;
+            case "lt" ->
+                result = operand1 < operand2;
+            case "equal_rel" ->
+                result = operand1 == operand2;
+            case "not_equal_rel" ->
+                result = operand1 != operand2;
+            default ->
+                result = false;
+        }
+
+        return result;
     }
 
     private boolean match(String token) {
@@ -239,7 +298,7 @@ public class Interpreter {
 
     private void referenceError(String literal) throws RuntimeErrorException {
         String message = "Null Pointer Exception!, variable: "
-                + literal 
+                + literal
                 + " is not initialized";
 
         throw new RuntimeErrorException(message);
@@ -366,10 +425,8 @@ class AOPReconstructor {
         while (!stack.isEmpty()) {
             result.add(stack.pop());
         }
-
         return result;
     }
-
 }
 
 class LOPReconstructor {
