@@ -173,12 +173,31 @@ public class Interpreter {
     }
 
     // DONE
-    private void roar() {
+    private void roar() throws RuntimeErrorException {
         ptr += 2;
+        
         if (tokens.get(ptr).startsWith("id_")) {
-            System.out.println(st.getTokenValue(tokens.get(ptr), "value"));
+            String value = st.getTokenValue(tokens.get(ptr), "value").toString();
+            
+            if (value.contains("\"")) {
+                String str = value.substring(1, tokens.get(ptr).length() - 1);
+                System.out.println(str);
+            }
             ptr++;
         } else if (tokens.get(ptr).contains("\"")) {
+            String str = tokens.get(ptr).substring(1, tokens.get(ptr).length() - 1);
+            System.out.println(str);
+        }
+        else if (tokens.get(ptr).equals("true_bool")) {
+            System.out.println("True");
+        }
+        else if (tokens.get(ptr).equals("false_bool")) {
+            System.out.println("False");
+        }
+        else if (tokens.get(ptr).contains("aop_"))   {
+            System.out.println(arithmeticOp(tokens.get(ptr), tokens.get(ptr)));
+        }
+        else    {
             System.out.println(tokens.get(ptr));
         }
         ptr += 2;
@@ -198,7 +217,7 @@ public class Interpreter {
                     referenceError(s.substring(3));
                 }
                 Object val = st.getTokenValue(s, "value");
-                typeCheck("int", val, literal.substring(3));
+                    typeCheck("int", val, literal.substring(3));
                 stk.push((Integer) val);
             } else {
                 int val1 = stk.pop();

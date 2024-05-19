@@ -12,3 +12,15 @@ Repeat (x < 100, x++) {
         Roar("greater than 5");
     };
 };
+
+If ((x+1) > 10)   {
+    Roar("rrr");
+    Roar(10+10+10+10);
+    Roar(x);
+    Roar(x+x+x/2+10);
+    Roar(True);
+    Roar(False);
+
+    Word name = "Amiel";
+    Roar(name);
+};

@@ -269,8 +269,16 @@ public class SyntaxAnalyzer {
             if (lookAhead.equals("roar")) {
                 match("roar", curPtn);
                 match("parenthesis_start", curPtn);
-                if (lookAhead.contains("\"") || lookAhead.startsWith("id")) {
+
+                boolean isOperation = (lookAhead.startsWith("id") && !tokenQueue.peek().equals("parenthesis_end")) || isInt(lookAhead);
+
+                // match literal and variables
+                if (lookAhead.contains("\"") || (lookAhead.startsWith("id") && tokenQueue.peek().equals("parenthesis_end")) || lookAhead.equals("true_bool") || lookAhead.equals("false_bool")) {
                     match(lookAhead, curPtn);
+                }
+                // arithmetic operations
+                else if (isOperation) {
+                    ARITHMETIC_OPERATION(curPtn);
                 }
                 match("parenthesis_end", curPtn);
             }
