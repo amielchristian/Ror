@@ -4,6 +4,7 @@
  */
 package rorlanguage;
 
+import java.util.ArrayList;
 import modules.LexResult;
 import modules.DFALex;
 import modules.ParseTreeNode;
@@ -24,8 +25,7 @@ public class RorLanguage {
         sa.parse();
         System.out.println(st);
         ParseTreeNode ptn = sa.getParseTree();
-        Interpreter intptr = new Interpreter(ptn, st);
+        Interpreter intptr = new Interpreter(ptn, st, new ArrayList<>(), new ArrayList<>());
         intptr.run();
-//        System.out.println(st);
     }
 }

@@ -4,7 +4,10 @@ Int b = 2;
 Int c = 3;
 Int d = 4;
 Int e = 5;
-Int c = 6;
+Int q = 0;
+
+Int p = q + d;
+Roar(p);
 
 If (x >= 4) {   
     Roar(a);
@@ -13,9 +16,14 @@ If (x >= 4) {
         Roar(c);
     };
 } Else If (x < 4) {
+    Roar("nag run");
     Roar(d);
-} Else If (x < 4) {
-    Roar(e);
 } Else {
     Roar(f);
 };
+
+If (x > 5)  {
+    Roar(a);
+};
+
+Roar(p);

@@ -6,8 +6,12 @@ package rorlanguage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import modules.ParseTreeNode;
 import modules.SymbolTable;
 
@@ -22,50 +26,59 @@ public class Interpreter {
     private int ptr;
     private ParseTreeNode ptn;
     private int index;
-    private ArrayList<ParseTreeNode> aops;
-    private int ifctr;
+    public ArrayList<ParseTreeNode> aops;
+    public ArrayList<ArrayList> ifs;
+    public int ifctr;
 
-    public Interpreter(ParseTreeNode ptn, SymbolTable st) {
+    public Interpreter(ParseTreeNode ptn, SymbolTable st, ArrayList<ArrayList> ifs, ArrayList<ParseTreeNode> aops) {
         this.st = st;
-        tokens = new ArrayList<String>();
-        aops = new ArrayList<ParseTreeNode>();
-        ifctr = 0;
+        tokens = new ArrayList<>();
+        this.aops = aops;
+        this.ifs = ifs;
+        ifctr = ifs.size()-1;
         ptr = 0;
         this.ptn = ptn;
         this.index = 0;
-        traverse(this.ptn);
-//        System.out.println(tokens);
-        for (String token : tokens) {
-            System.out.println(token);
-        }
+        traverse(this.ptn, tokens, true);
     }
 
-    private void traverse(ParseTreeNode ptn) {
+    public void traverse(ParseTreeNode ptn, ArrayList tokens, boolean addToTokens) {
         ptn.index = index;
         index++;
         if (ptn == null) {
             return;
         }
+        
+        // find a way to prevent statements within ifs from being added
         if (ptn.name.equals("<IF_STATEMENT>")) {
-            ifstmtReconstructor(ptn);
+            ifs.add(ifstmtReconstructor(ptn));
             ifctr++;
+            if (addToTokens)    {
+                tokens.add("if_"+(ifs.size()-1));
+            }
+            addToTokens = false;
         }
-        if (!ptn.name.equals("<S>") && !ptn.name.equals("<ARITHMETIC_OPERATION>")) {
-            tokens.add(ptn.name);
+        
+        if (!ptn.name.equals("<S>") && !ptn.name.equals("<ARITHMETIC_OPERATION>") && !ptn.name.equals("<IF_STATEMENT>")) {
+            if (addToTokens)    {
+                tokens.add(ptn.name);
+            }
         } else if (ptn.name.equals("<ARITHMETIC_OPERATION>")) {
-            tokens.add("aop_" + aops.size());
+            if (addToTokens)    {
+                tokens.add("aop_" + aops.size());
+            }
             ParseTreeNode ptnCopy = new ParseTreeNode("<ARITHMETIC_OPERATION>");
             ptnCopy.setChildren(ptn.getChildren());
             aops.add(ptnCopy);
+            ptn.name = "aop_"+(aops.size()-1);
             ptn.removeChildren();
         }
         for (ParseTreeNode child : ptn.getChildren()) {
-            traverse(child);
+            traverse(child, tokens, addToTokens);
         }
     }
 
     public void run() {
-        System.out.println("INTERPRETER -------------------------------");
         try {
             while (ptr < tokens.size() - 1) {
                 if (match("<P>")) {
@@ -75,7 +88,7 @@ public class Interpreter {
                     roar();
                 } else if (match("<A>")) {
                     assign();
-                } else if (match("<IF_STATEMENT>")) {
+                } else if (tokens.get(ptr).contains("if")) {
                     conditional();
                 } else if (match("<ARITHMETIC_OPERATION>")) {
 
@@ -131,14 +144,14 @@ public class Interpreter {
         } else if (tokens.get(ptr).startsWith("aop_")) {
             value = arithmeticOp(tokens.get(ptr), identifier);
             ptr++;
-        } else if (tokens.get(ptr).contains("\"") || tokens.get(ptr).equals("True") || tokens.get(ptr).equals("False")) {
+        } else if (tokens.get(ptr).contains("\"") || tokens.get(ptr).contains("bool")) {
             value = tokens.get(ptr);
         }
         st.updateTokenValue(identifier, value);
         ptr++;
     }
 
-    // DONE
+    // TODO: TYPE CHECKING
     private String nom() {
         ptr += 3;
         Scanner sc = new Scanner(System.in);
@@ -149,17 +162,16 @@ public class Interpreter {
     private void roar() {
         ptr += 2;
         if (tokens.get(ptr).startsWith("id_")) {
-            System.out.print(st.getTokenValue(tokens.get(ptr), "value"));
+            System.out.println(st.getTokenValue(tokens.get(ptr), "value"));
             ptr++;
         } else if (tokens.get(ptr).contains("\"")) {
-            System.out.print(tokens.get(ptr));
+            System.out.println(tokens.get(ptr));
         }
         ptr += 2;
     }
 
     // DONE
     private int arithmeticOp(String aop, String literal) throws RuntimeErrorException {
-        int result = 0;
         ParseTreeNode arithmeticTree = aops.get(Integer.parseInt(aop.substring(4)));
         AOPReconstructor aopr = new AOPReconstructor(arithmeticTree);
         ArrayList<String> postfix = aopr.getPostFix();
@@ -201,29 +213,76 @@ public class Interpreter {
 
     }
 
-    private void conditional() throws RuntimeErrorException {
-        ptr += 2; // skip If and (
-        int operand1;
-        System.out.println(tokens.get(ptr));
-        if (tokens.get(ptr).startsWith("aop_")) {
-            operand1 = arithmeticOp(tokens.get(ptr), "");
-        } else if (tokens.get(ptr).contains("id_")) {
-            operand1 = (Integer) st.getTokenValue(tokens.get(ptr), "value");
-        } else {
-            operand1 = Integer.parseInt(tokens.get(ptr));
-        }
-        ptr += 2;
-        System.out.println("dick");
-        System.out.println(tokens.get(ptr));
+    public void conditional() throws RuntimeErrorException {
+        ArrayList node = ifs.get(Integer.parseInt(tokens.get(ptr).substring(3)));
+        
+        // evaluate conditions starting with first; move on to next if false, execute if true
+        for (int i = 0; i < node.size(); i++) {
+            ArrayList conditional = (ArrayList) node.get(i);
 
-        boolean condition;
-        if (match("<RELATIONAL_OPERATION>")) {
-            condition = relationalOp(operand1);
-        } else {
-            condition = logicalOp(operand1);
+            // else
+            if (i == node.size() - 1 && conditional.size() == 1) {
+                ParseTreeNode statement = (ParseTreeNode) conditional.get(0);
+                executeStatement(statement);
+            }
+            // if and else if
+            else    {
+                ParseTreeNode condition = (ParseTreeNode) conditional.get(0);
+                ParseTreeNode statement = (ParseTreeNode) conditional.get(1);
+                if (evaluateCondition(condition, statement)) {
+                    executeStatement((ParseTreeNode) conditional.get(2));
+                    break;
+                }
+            }
+        }
+        ptr++;
+    }
+
+    public boolean evaluateCondition(ParseTreeNode operand, ParseTreeNode conditionNode) throws RuntimeErrorException   {
+        Object operandValue;
+        if (operand.name.contains("id_"))   {
+            operandValue = st.getTokenValue(operand.name, "value");
+        }
+        else if (operand.name.contains("aop_")) {
+            operandValue = arithmeticOp(operand.name, operand.name);
+        }
+        else    {
+            operandValue = operand.name;
         }
 
-        // TODO: ACTUAL IF LOGIC
+        // these cases are for determining if the condition is a logical or relational operation
+        // this is for the case where the condition is a logical operation with a single boolean operand
+        if (conditionNode.getChildren().isEmpty()) {
+            try {
+                return (boolean) operandValue;
+            } catch (ClassCastException e) {
+                String message = "Type Mismatch, type: "
+                        + operandValue.getClass().getSimpleName()
+                        + " is incompatible with datatype: "
+                        + "Bool"
+                        + " literal: "
+                        + operand.name.substring(3);
+
+                //throw new RuntimeErrorException(message);
+            }
+        }
+        // this is for the case where the condition is a logical operation
+        else if (conditionNode.getChildren().getFirst().name.equals("<LOGICAL_OPERATION>")) {
+            //return logicalOp(operandValue);
+        }
+        else if (conditionNode.getChildren().getFirst().name.equals("<RELATIONAL_OPERATION>")) {
+            int x = (int) operandValue;
+            try {
+                return relationalOp(x, conditionNode.getChildren().getFirst().getChildren().getFirst());
+            } catch (RuntimeErrorException ex) {
+                Logger.getLogger(Interpreter.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        else    {
+            return false;
+        }
+
+        return false;
     }
 
     // TODO
@@ -232,12 +291,11 @@ public class Interpreter {
     }
 
     // DONE
-    private boolean relationalOp(int operand1) throws RuntimeErrorException {
+    private boolean relationalOp(int operand1, ParseTreeNode root) throws RuntimeErrorException {
         boolean result;
-
-        ptr++;
-        String operator = tokens.get(ptr++);
-        int operand2 = arithmeticOp(tokens.get(ptr), "");
+        
+        String operator = root.getChildren().get(0).name;
+        int operand2 = arithmeticOp(root.getChildren().get(1).name, root.getChildren().get(1).name);
 
         switch (operator) {
             case "gte" ->
@@ -255,8 +313,17 @@ public class Interpreter {
             default ->
                 result = false;
         }
-
         return result;
+    }
+
+    public void executeStatement(ParseTreeNode statement) {
+       Interpreter intptr = new Interpreter(statement, this.st, ifs, aops);
+//       System.out.println(intptr.ifs);
+       intptr.run();
+       this.st = intptr.st;
+       this.aops = intptr.aops;
+       this.ifs = intptr.ifs;
+       ptr++;
     }
 
     private boolean match(String token) {
@@ -308,29 +375,69 @@ public class Interpreter {
         throw new RuntimeErrorException(message);
     }
 
-    private void ifstmtReconstructor(ParseTreeNode ptn) {
+    public ArrayList<ArrayList> ifstmtReconstructor(ParseTreeNode ptn) {
         ParseTreeNode root = ptn;
         root.getChildren().get(0).setName("if_" + ifctr);
-//        root.setName(name);
-        while (root.getChildren().getLast().getChildren().size() != 0) {
-            int lastIndex = root.getChildren().size() - 1;
+        
+        // structure: {conditions: statements to be executed}
+        // for else, conditions will be empty
+        // this structure will be returned and evaluated in the interpreter
+        ArrayList<ArrayList> conditionals = new ArrayList<>();
+        ArrayList<ParseTreeNode> conditions = new ArrayList<>();
+        ParseTreeNode condition = null;
+        ParseTreeNode statement = null;
+        
+        // get if
+        conditions.add(root.getChildren().get(2));
+        conditions.add(root.getChildren().get(3));
+        conditions.add(root.getChildren().get(6));
+        conditionals.add(conditions);
+        
+        // get elseifs and elses
+        boolean endFound = false;
+        while (!endFound) {
+            conditions = new ArrayList<>();
+            try {
+                root = root.getChildren().getLast();
+            } catch (NoSuchElementException e) {
+                endFound = true;
+            }
 
-            for (ParseTreeNode node : root.getChildren().getLast().getChildren()) {
-                if (node.name.equals("<ELSE_STATEMENT_>")) {
-                    for (ParseTreeNode subnode : node.getChildren()) {
-                        if (subnode.name.equals("if")) {
-                            subnode.setName("if_" + ifctr);
-                        }
-                        root.addChild(subnode);
+            for (ParseTreeNode node : root.getChildren()) {
+                if (node.name.equals("<ELSE_STATEMENT_>"))  {
+                    if (node.getChildren().getFirst().name.equals("if"))    {
+                        conditions.add(node.getChildren().get(2));
+                        conditions.add(node.getChildren().get(3));
+                        conditions.add(node.getChildren().get(6));
                     }
-                } else {
-                    node.setName(node.name + "_" + ifctr);
-                    root.addChild(node);
+                    else    {
+                        conditions.add(node.getChildren().get(1));
+                    }
+                    conditionals.add(conditions);
                 }
             }
-            root.getChildren().remove(lastIndex);
         }
-//        System.out.println(root);
+        
+        root = ptn;
+        while (!root.getChildren().getLast().getChildren().isEmpty()) {
+              int lastIndex = root.getChildren().size() - 1;
+
+              for (ParseTreeNode node : root.getChildren().getLast().getChildren()) {
+                  if (node.name.equals("<ELSE_STATEMENT_>")) {
+                      for (ParseTreeNode subnode : node.getChildren()) {
+                          if (subnode.name.equals("if")) {
+                              subnode.setName("if_" + ifctr);
+                          }
+                          root.addChild(subnode);
+                      }
+                  } else {
+                      node.setName(node.name + "_" + ifctr);
+                      root.addChild(node);
+                  }
+              }
+              root.getChildren().remove(lastIndex);
+          }
+        return conditionals;
     }
 
 }
@@ -472,23 +579,14 @@ class LOPReconstructor {
         for (String str : res) {
 
             switch (str) {
-                case "add_op":
-                    infix = infix + "+ ";
+                case "and":
+                    infix = infix + "And ";
                     break;
-                case "minus_op":
-                    infix = infix + "- ";
+                case "or":
+                    infix = infix + "Or ";
                     break;
-                case "mult_op":
-                    infix = infix + "* ";
-                    break;
-                case "div_op":
-                    infix = infix + "/ ";
-                    break;
-                case "parenthesis_start":
-                    infix = infix + "( ";
-                    break;
-                case "parenthesis_end":
-                    infix = infix + ") ";
+                case "not":
+                    infix = infix + "Not ";
                     break;
                 default:
                     infix = infix + str + " ";
@@ -521,7 +619,7 @@ class LOPReconstructor {
         }
     }
 
-    public ArrayList<String> getAOPArray() {
+    public ArrayList<String> getLOPArray() {
         return res;
     }
 
@@ -529,24 +627,16 @@ class LOPReconstructor {
         return result;
     }
 
-    private int prec(char c) {
-        if (c == '^') {;
+    private int prec(String s) {
+        if (s.equals("not")) {
             return 3;
-        } else if (c == '/' || c == '*') {
+        } else if (s.equals("or ")) {
             return 2;
-        } else if (c == '+' || c == '-') {
+        } else if (s.equals("and")) {
             return 1;
-        } else {
+        } else  {
             return -1;
         }
-    }
-
-    // Function to return associativity of operators
-    private char associativity(char c) {
-        if (c == '^') {
-            return 'R';
-        }
-        return 'L'; // Default to left-associative
     }
 
     // The main function to convert infix expression to postfix expression
@@ -565,9 +655,9 @@ class LOPReconstructor {
                 }
                 stack.pop(); // Pop '('
             } else {
-                while (!stack.isEmpty() && (prec(s.charAt(0)) < prec(stack.peek().charAt(0))
-                        || prec(s.charAt(0)) == prec(stack.peek().charAt(0))
-                        && associativity(s.charAt(0)) == 'L')) {
+                while (!stack.isEmpty() && (prec(s.substring(0,2))) < prec(stack.peek())
+                        || prec(s.substring(0,2)) == prec(stack.peek())
+                    ) {
                     result.add(stack.pop());
                 }
                 stack.push(s);
