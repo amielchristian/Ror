@@ -1,29 +1,14 @@
-Int x = 5;
-Int a = 1;
-Int b = 2;
-Int c = 3;
-Int d = 4;
-Int e = 5;
-Int q = 0;
+Int x = 0;
 
-Int p = q + d;
-Roar(p);
-
-If (x >= 4) {   
-    Roar(a);
-    Roar(b);
-    If (x == 5) {
-        Roar(c);
+Repeat (x < 100, x++) {
+    Roar(x);
+    If (x < 5) {
+        Roar("less than 5");
+    }
+    Else If (x == 5)   {
+        Roar("equal to 5");
+    }
+    Else    {
+        Roar("greater than 5");
     };
-} Else If (x < 4) {
-    Roar("nag run");
-    Roar(d);
-} Else {
-    Roar(f);
 };
-
-If (x > 5)  {
-    Roar(a);
-};
-
-Roar(p);

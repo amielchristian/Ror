@@ -28,13 +28,15 @@ public class Interpreter {
     private int index;
     public ArrayList<ParseTreeNode> aops;
     public ArrayList<ArrayList> ifs;
+    public ArrayList<ArrayList> loops;
     public int ifctr;
 
-    public Interpreter(ParseTreeNode ptn, SymbolTable st, ArrayList<ArrayList> ifs, ArrayList<ParseTreeNode> aops) {
+    public Interpreter(ParseTreeNode ptn, SymbolTable st, ArrayList<ArrayList> ifs, ArrayList<ParseTreeNode> aops, ArrayList<ArrayList> loops) {
         this.st = st;
         tokens = new ArrayList<>();
         this.aops = aops;
         this.ifs = ifs;
+        this.loops = loops;
         ifctr = ifs.size()-1;
         ptr = 0;
         this.ptn = ptn;
@@ -49,6 +51,15 @@ public class Interpreter {
             return;
         }
         
+        
+        if (ptn.name.equals("<ITERATIVE_STATEMENT>")) {
+            loops.add(loopReconstructor(ptn));
+            if (addToTokens)    {
+                tokens.add("loop_"+(loops.size()-1));
+            }
+            addToTokens = false;
+        }
+        
         // find a way to prevent statements within ifs from being added
         if (ptn.name.equals("<IF_STATEMENT>")) {
             ifs.add(ifstmtReconstructor(ptn));
@@ -58,8 +69,9 @@ public class Interpreter {
             }
             addToTokens = false;
         }
+
         
-        if (!ptn.name.equals("<S>") && !ptn.name.equals("<ARITHMETIC_OPERATION>") && !ptn.name.equals("<IF_STATEMENT>")) {
+        if (!ptn.name.equals("<S>") && !ptn.name.equals("<ARITHMETIC_OPERATION>") && !ptn.name.equals("<IF_STATEMENT>") && !ptn.name.equals("<ITERATIVE_STATEMENT>")) {
             if (addToTokens)    {
                 tokens.add(ptn.name);
             }
@@ -90,6 +102,8 @@ public class Interpreter {
                     assign();
                 } else if (tokens.get(ptr).contains("if")) {
                     conditional();
+                } else if (tokens.get(ptr).contains("loop"))    {
+                    repeat();
                 } else if (match("<ARITHMETIC_OPERATION>")) {
 
                 } else {
@@ -209,10 +223,42 @@ public class Interpreter {
         return stk.pop();
     }
 
-    private void logicalOp() {
+    public void repeat() throws RuntimeErrorException   {
+        ArrayList node = loops.get(Integer.parseInt(tokens.get(ptr).substring(5)));
+        
+        int a = ptr;
+        // evaluate conditions starting with first; move on to next if false, execute if true
+        if (node.size() == 3)   {
+            ParseTreeNode condition = (ParseTreeNode) node.get(0);
+            ParseTreeNode statement = (ParseTreeNode) node.get(1);
+            while (evaluateCondition(condition, statement)) {
+                executeStatement((ParseTreeNode) node.get(2));
+            }
+        }
+        else    {
+            ParseTreeNode condition = (ParseTreeNode) node.get(0);
+            ParseTreeNode statement = (ParseTreeNode) node.get(1);
+            ParseTreeNode control = (ParseTreeNode) node.get(2);
+            ParseTreeNode optionalOp = (ParseTreeNode) node.get(3);
+            
+            int op;
+            if (optionalOp.getChildren().get(0).name.equals("increment_op"))
+                op = 1;
+            else
+                op = -1;
+            
+            while (evaluateCondition(condition, statement)) {
+                int integer = (Integer) st.getTokenValue(control.name, "value");
 
+                executeStatement((ParseTreeNode) node.get(4));
+                st.updateTokenValue(control.name, integer+op);
+            }
+        }
+        
+        ptr = a;
+        ptr++;
     }
-
+    
     public void conditional() throws RuntimeErrorException {
         ArrayList node = ifs.get(Integer.parseInt(tokens.get(ptr).substring(3)));
         
@@ -229,6 +275,7 @@ public class Interpreter {
             else    {
                 ParseTreeNode condition = (ParseTreeNode) conditional.get(0);
                 ParseTreeNode statement = (ParseTreeNode) conditional.get(1);
+                
                 if (evaluateCondition(condition, statement)) {
                     executeStatement((ParseTreeNode) conditional.get(2));
                     break;
@@ -317,12 +364,13 @@ public class Interpreter {
     }
 
     public void executeStatement(ParseTreeNode statement) {
-       Interpreter intptr = new Interpreter(statement, this.st, ifs, aops);
+       Interpreter intptr = new Interpreter(statement, this.st, ifs, aops, loops);
 //       System.out.println(intptr.ifs);
        intptr.run();
        this.st = intptr.st;
        this.aops = intptr.aops;
        this.ifs = intptr.ifs;
+       this.loops = intptr.loops;
        ptr++;
     }
 
@@ -417,29 +465,51 @@ public class Interpreter {
                 }
             }
         }
-        
-        root = ptn;
-        while (!root.getChildren().getLast().getChildren().isEmpty()) {
-              int lastIndex = root.getChildren().size() - 1;
-
-              for (ParseTreeNode node : root.getChildren().getLast().getChildren()) {
-                  if (node.name.equals("<ELSE_STATEMENT_>")) {
-                      for (ParseTreeNode subnode : node.getChildren()) {
-                          if (subnode.name.equals("if")) {
-                              subnode.setName("if_" + ifctr);
-                          }
-                          root.addChild(subnode);
-                      }
-                  } else {
-                      node.setName(node.name + "_" + ifctr);
-                      root.addChild(node);
-                  }
-              }
-              root.getChildren().remove(lastIndex);
-          }
+//        
+//        root = ptn;
+//        while (!root.getChildren().getLast().getChildren().isEmpty()) {
+//              int lastIndex = root.getChildren().size() - 1;
+//
+//              for (ParseTreeNode node : root.getChildren().getLast().getChildren()) {
+//                  if (node.name.equals("<ELSE_STATEMENT_>")) {
+//                      for (ParseTreeNode subnode : node.getChildren()) {
+//                          if (subnode.name.equals("if")) {
+//                              subnode.setName("if_" + ifctr);
+//                          }
+//                          root.addChild(subnode);
+//                      }
+//                  } else {
+//                      node.setName(node.name + "_" + ifctr);
+//                      root.addChild(node);
+//                  }
+//              }
+//              root.getChildren().remove(lastIndex);
+//          }
         return conditionals;
     }
-
+    
+    public ArrayList<ParseTreeNode> loopReconstructor(ParseTreeNode ptn) {
+        ParseTreeNode root = ptn.getChildren().get(0);
+        root.getChildren().get(0).setName("loop_" + (loops.size()-1));
+        
+        ArrayList<ParseTreeNode> conditions = new ArrayList<>();
+        
+        if (root.getChildren().get(6).name.equals("<S>"))   {
+            conditions.add(root.getChildren().get(2));
+            conditions.add(root.getChildren().get(3));
+            conditions.add(root.getChildren().get(6));
+        }
+        else if (root.getChildren().get(9).name.equals("<S>"))  {
+            conditions.add(root.getChildren().get(2));
+            conditions.add(root.getChildren().get(3));
+            conditions.add(root.getChildren().get(5));
+            conditions.add(root.getChildren().get(6));
+            conditions.add(root.getChildren().get(9));
+        }
+        return conditions;
+    }
+    
+    
 }
 // <editor-fold defaultstate="collapsed" desc="Helper Classes">
 
