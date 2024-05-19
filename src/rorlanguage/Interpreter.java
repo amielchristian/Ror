@@ -27,13 +27,15 @@ public class Interpreter {
     private ParseTreeNode ptn;
     private int index;
     public ArrayList<ParseTreeNode> aops;
+    public ArrayList<ParseTreeNode> lgps;
     public ArrayList<ArrayList> ifs;
     public ArrayList<ArrayList> loops;
     public int ifctr;
 
-    public Interpreter(ParseTreeNode ptn, SymbolTable st, ArrayList<ArrayList> ifs, ArrayList<ParseTreeNode> aops, ArrayList<ArrayList> loops) {
+    public Interpreter(ParseTreeNode ptn, SymbolTable st, ArrayList<ArrayList> ifs, ArrayList<ParseTreeNode> aops, ArrayList<ArrayList> loops, ArrayList<ParseTreeNode> lgps) {
         this.st = st;
         tokens = new ArrayList<>();
+        this.lgps = lgps;
         this.aops = aops;
         this.ifs = ifs;
         this.loops = loops;
@@ -71,7 +73,7 @@ public class Interpreter {
         }
 
         
-        if (!ptn.name.equals("<S>") && !ptn.name.equals("<ARITHMETIC_OPERATION>") && !ptn.name.equals("<IF_STATEMENT>") && !ptn.name.equals("<ITERATIVE_STATEMENT>")) {
+        if (!ptn.name.equals("<S>") && !ptn.name.equals("<ARITHMETIC_OPERATION>") && !ptn.name.equals("<IF_STATEMENT>") && !ptn.name.equals("<ITERATIVE_STATEMENT>") && !ptn.name.contains("<LOGICAL_OPERATION>")) {
             if (addToTokens)    {
                 tokens.add(ptn.name);
             }
@@ -84,6 +86,15 @@ public class Interpreter {
             aops.add(ptnCopy);
             ptn.name = "aop_"+(aops.size()-1);
             ptn.removeChildren();
+        } else if (ptn.name.equals("<LOGICAL_OPERATION__>")) {
+            if (addToTokens)    {
+                tokens.add("lgp_" + lgps.size());
+            }
+            ParseTreeNode ptnCopy = new ParseTreeNode("<LOGICAL_OPERATION__>");
+            ptnCopy.setChildren(ptn.getChildren());
+            lgps.add(ptnCopy);
+            ptn.name = "lgp_"+(lgps.size()-1);
+            ptn.removeChildren();
         }
         for (ParseTreeNode child : ptn.getChildren()) {
             traverse(child, tokens, addToTokens);
@@ -93,6 +104,7 @@ public class Interpreter {
     public void run() {
         try {
             while (ptr < tokens.size() - 1) {
+                System.out.println(tokens);
                 if (match("<P>")) {
                 } else if (match("<D>")) {
                     declare();
@@ -106,6 +118,8 @@ public class Interpreter {
                     repeat();
                 } else if (match("<ARITHMETIC_OPERATION>")) {
 
+                } else if (match("<LOGICAL_OPERATION__>"))  {
+                    
                 } else {
                     ptr++;
                 }
@@ -304,6 +318,17 @@ public class Interpreter {
         ptr++;
     }
 
+    public void executeStatement(ParseTreeNode statement) {
+        Interpreter intptr = new Interpreter(statement, this.st, ifs, aops, loops, lgps);
+        intptr.run();
+        this.st = intptr.st;
+        this.aops = intptr.aops;
+        this.ifs = intptr.ifs;
+        this.loops = intptr.loops;
+        this.lgps = lgps;
+        ptr++;
+     }
+
     public boolean evaluateCondition(ParseTreeNode operand, ParseTreeNode conditionNode) throws RuntimeErrorException   {
         Object operandValue;
         if (operand.name.contains("id_"))   {
@@ -333,8 +358,8 @@ public class Interpreter {
             }
         }
         // this is for the case where the condition is a logical operation
-        else if (conditionNode.getChildren().getFirst().name.equals("<LOGICAL_OPERATION>")) {
-            //return logicalOp(operandValue);
+        else if (conditionNode.getChildren().getFirst().name.contains("lgp")) {
+            return logicalOp(conditionNode.getChildren().getFirst().name, conditionNode.getChildren().getFirst().name);
         }
         else if (conditionNode.getChildren().getFirst().name.equals("<RELATIONAL_OPERATION>")) {
             int x = (int) operandValue;
@@ -348,11 +373,6 @@ public class Interpreter {
             return false;
         }
 
-        return false;
-    }
-
-    // TODO
-    private boolean logicalOp(int operand1) {
         return false;
     }
 
@@ -382,20 +402,43 @@ public class Interpreter {
         return result;
     }
 
-    public void executeStatement(ParseTreeNode statement) {
-       Interpreter intptr = new Interpreter(statement, this.st, ifs, aops, loops);
-//       System.out.println(intptr.ifs);
-       intptr.run();
-       this.st = intptr.st;
-       this.aops = intptr.aops;
-       this.ifs = intptr.ifs;
-       this.loops = intptr.loops;
-       ptr++;
-    }
+    private boolean logicalOp(String lgp, String literal) throws RuntimeErrorException {
+        ParseTreeNode logicTree = lgps.get(Integer.parseInt(lgp.substring(4)));
+        LOPReconstructor lopr = new LOPReconstructor(logicTree);
+        ArrayList<String> postfix = lopr.getPostFix();
+        Stack<Boolean> stk = new Stack<>();
+        for (String s : postfix) {
+            if (Character.isDigit(s.charAt(0))) {
+                stk.push(Boolean.parseBoolean(s));
+            } else if (s.startsWith("id_")) {
+                if (!st.checkInitialization(s)) {
+                    referenceError(s.substring(3));
+                }
+                Object val = st.getTokenValue(s, "value");
+                    typeCheck("bool", val, literal.substring(3));
+                stk.push((Boolean) val);
+            } else {
+                boolean val1 = stk.pop();
+                boolean val2 = stk.pop();
+                switch (s) {
+                    case "And":
+                        stk.push(val2 && val1);
+                        break;
+                    case "Or":
+                        stk.push(val2 || val1);
+                        break;
+                    case "Not":
+                        stk.push(!val2);
+                        break;
+                }
+            }
+        }
 
+        return stk.pop();
+    }
+    
     private boolean match(String token) {
         if (tokens.get(ptr).equals(token)) {
-//            System.out.println("MATCHING: " + token + " WITH: " + tokens.get(ptr));
             ptr++;
             return true;
         } else {
@@ -484,26 +527,6 @@ public class Interpreter {
                 }
             }
         }
-//        
-//        root = ptn;
-//        while (!root.getChildren().getLast().getChildren().isEmpty()) {
-//              int lastIndex = root.getChildren().size() - 1;
-//
-//              for (ParseTreeNode node : root.getChildren().getLast().getChildren()) {
-//                  if (node.name.equals("<ELSE_STATEMENT_>")) {
-//                      for (ParseTreeNode subnode : node.getChildren()) {
-//                          if (subnode.name.equals("if")) {
-//                              subnode.setName("if_" + ifctr);
-//                          }
-//                          root.addChild(subnode);
-//                      }
-//                  } else {
-//                      node.setName(node.name + "_" + ifctr);
-//                      root.addChild(node);
-//                  }
-//              }
-//              root.getChildren().remove(lastIndex);
-//          }
         return conditionals;
     }
     
@@ -528,7 +551,93 @@ public class Interpreter {
         return conditions;
     }
     
-    
+    // logical operation experimental
+    // private boolean logicalOperation(ParseTreeNode operand, ParseTreeNode conditionNode)  {
+    //     boolean result = false;
+
+    //     // model after compute, but for logical ops
+    //     for (ParseTreeNode child : ptn.getChildren())   {
+    //         if (child.name.equals("<!epsilon>"))    {
+    //             result = -1;
+    //         }
+    //     }
+
+    //     if (ptn.name.equals("<LOGICAL_OPERATION>")) {
+    //         ArrayList<ParseTreeNode> children = ptn.getChildren();
+
+    //         int op = 0;
+    //         String opPosition = children.get(1).getChildren().get(0).name;
+    //         if (opPosition.contains("_op"))  {
+    //             if (opPosition.contains("or")) {
+    //                 op = 0;
+    //             }
+    //             else if (opPosition.contains("and"))   {
+    //                 op = 1;
+    //             }
+    //         }
+    //         else    {
+    //             return logicalOperation(children.get(0));
+    //         }
+
+    //         int operand1 = logicalOperation(children.get(0));
+    //         int operand2 = logicalOperation(children.get(1).getChildren().get(1));
+    //         System.out.println("performing "+operand1+" "+op+" "+operand2);
+    //         switch (op) {
+    //             case 0:
+    //                 result = operand1+operand2;
+    //                 break;
+    //             case 1:
+    //                 result =  operand1-operand2;
+    //                 break;
+    //             default:
+    //                 result =  operand1;
+    //                 break;
+    //         }
+    //         children.get(1).getChildren().get(1).name = Integer.toString(result);
+    //         result = logicalOperation(children.get(1));
+    //     }
+    //     else if (ptn.name.equals("<LOGICAL_OPERATION_>")) {
+    //         ArrayList<ParseTreeNode> children = ptn.getChildren();
+
+    //         int op = 0;
+    //         String opPosition = children.get(2).getChildren().get(0).name;
+    //         if (opPosition.contains("_op"))  {
+    //             if (opPosition.contains("or")) {
+    //                 op = 0;
+    //             }
+    //             else if (opPosition.contains("and"))   {
+    //                 op = 1;
+    //             }
+    //         }
+    //         else    {
+    //             return logicalOperation(children.get(1));
+    //         }
+
+    //         int operand1 = logicalOperation(children.get(1));
+    //         int operand2 = logicalOperation(children.get(2));
+    //         System.out.println("performing "+operand1+" "+op+" "+operand2);
+    //         switch (op) {
+    //             case 0:
+    //                 result = operand1+operand2;
+    //                 break;
+    //             case 1:
+    //                 result =  operand1-operand2;
+    //                 break;
+    //             default:
+    //                 result =  operand1;
+    //                 break;
+    //         }
+    //     }
+    //     else if (ptn.name.equals("<LOGICAL_OPERATION>")) {}
+    //     else if (ptn.name.equals("<LOGICAL_OPERATION_>")) {}
+    //     else if (ptn.name.equals("<LOGICAL_TERM>")) {}
+    //     else if (ptn.name.equals("<LOGICAL_TERM_>")) {}
+
+    //     return result;
+    // }
+
+
+
 }
 // <editor-fold defaultstate="collapsed" desc="Helper Classes">
 

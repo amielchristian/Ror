@@ -1,6 +1,10 @@
-Int x = 0;
+Int x = 50;
 
-Repeat (x < 100, x++) {
+Bool a = True;
+Bool b = True;
+Bool c = False;
+
+Repeat (a Or Not c And Not b Or c, x++) {
     Roar(x);
     If (x < 5) {
         Roar("less than 5");
@@ -11,16 +15,4 @@ Repeat (x < 100, x++) {
     Else    {
         Roar("greater than 5");
     };
-};
-
-If ((x+1) > 10)   {
-    Roar("rrr");
-    Roar(10+10+10+10);
-    Roar(x);
-    Roar(x+x+x/2+10);
-    Roar(True);
-    Roar(False);
-
-    Word name = "Amiel";
-    Roar(name);
 };

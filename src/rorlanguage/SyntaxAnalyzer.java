@@ -584,7 +584,7 @@ public class SyntaxAnalyzer {
 
     void LOGICAL_OPERATION__(ParseTreeNode ptn) throws SyntaxErrorException {
         try {
-            ParseTreeNode curPtn = ptn.addChild("LOGICAL_OPERATION");
+            ParseTreeNode curPtn = ptn.addChild("LOGICAL_OPERATION__");
             trace("LO_");
             if (lookAhead.equals("or")) {
                 match("or", curPtn);
@@ -602,7 +602,7 @@ public class SyntaxAnalyzer {
 
     void LOGICAL_TERM(ParseTreeNode ptn) throws SyntaxErrorException {
         try {
-            ParseTreeNode curPtn = ptn.addChild("LOGICAL_OPERATION");
+            ParseTreeNode curPtn = ptn.addChild("LOGICAL_TERM");
             trace("LT");
             LOGICAL_FACTOR(curPtn);
             LOGICAL_TERM_(curPtn);
@@ -613,7 +613,7 @@ public class SyntaxAnalyzer {
 
     void LOGICAL_TERM_(ParseTreeNode ptn) throws SyntaxErrorException {
         try {
-            ParseTreeNode curPtn = ptn.addChild("LOGICAL_OPERATION");
+            ParseTreeNode curPtn = ptn.addChild("LOGICAL_TERM_");
             trace("LT_");
             if (lookAhead.equals("and")) {
                 match("and", curPtn);
@@ -630,7 +630,7 @@ public class SyntaxAnalyzer {
 
     void LOGICAL_FACTOR(ParseTreeNode ptn) throws SyntaxErrorException {
         try {
-            ParseTreeNode curPtn = ptn.addChild("LOGICAL_OPERATION");
+            ParseTreeNode curPtn = ptn.addChild("LOGICAL_FACTOR");
             trace("LF");
             if (lookAhead.equals("not")) {
                 match("not", curPtn);
@@ -643,7 +643,7 @@ public class SyntaxAnalyzer {
 
     void LOGICAL_FACTOR_(ParseTreeNode ptn) throws SyntaxErrorException {
         try {
-            ParseTreeNode curPtn = ptn.addChild("LOGICAL_OPERATION");
+            ParseTreeNode curPtn = ptn.addChild("LOGICAL_FACTOR_");
             trace("LF_");
             if (lookAhead.equals("parenthesis_start")) {
                 match("parenthesis_start", curPtn);

@@ -25,7 +25,7 @@ public class RorLanguage {
         sa.parse();
         System.out.println(st);
         ParseTreeNode ptn = sa.getParseTree();
-        Interpreter intptr = new Interpreter(ptn, st, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+        Interpreter intptr = new Interpreter(ptn, st, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
         intptr.run();
     }
 }
