@@ -1,18 +1,12 @@
-Int x = 50;
-
+Int x = 90;
+Int h = 10;
+Int i = 10;
 Bool a = True;
-Bool b = True;
+Bool b = False;
 Bool c = False;
-
-Repeat (a Or Not c And Not b Or c, x++) {
-    Roar(x);
-    If (x < 5) {
-        Roar("less than 5");
-    }
-    Else If (x == 5)   {
-        Roar("equal to 5");
-    }
-    Else    {
-        Roar("greater than 5");
-    };
-};
+Int z = 15;
+Roar("Enter something:");
+Int h = Nom();
+Roar("Enter something:");
+Int i = Nom(); 
+Roar(h+i);
